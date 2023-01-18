@@ -2,31 +2,19 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 -- Create the service:
-local TestService = Knit.CreateService {
-    Name = "TestService",
-    Client = {
-        TestDataChanged = Knit.CreateSignal(), -- Create the signal
-    },
+local DragonService = Knit.CreateService {
+    Name = "DragonService",
 }
 
+local Modules = ReplicatedStorage.Source.Modules
+local Classes = Modules.Classes
+
+local Dragon = require(Classes.Dragon)
 
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
 
-function TestService.Client:GetSomethingFromClient(player : Player?)
-    return self.Server:DoTheServerThing(player)
-end
-
-function TestService:DoTheServerThing(player)
-
-    task.delay(3, function()
-        -- update the Test Data
-        self.Client.TestDataChanged:Fire(player, "New Data!")
-    end)
-
-    return "Data wohoo"
-end
 
 
 ----------------------------------------------
@@ -38,13 +26,14 @@ end
 -------------- Lifetime Methods --------------
 ----------------------------------------------
 
-function TestService:KnitInit()
+function DragonService:KnitInit()
 
 end
 
-function TestService:KnitStart()
-    
+function DragonService:KnitStart()
+    local dragonObject = Dragon.new("FrostDragon")
+    dragonObject:StartBehavior()
 end
 
 
-return TestService
+return DragonService
