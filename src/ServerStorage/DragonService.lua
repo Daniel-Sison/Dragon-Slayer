@@ -16,7 +16,6 @@ local Dragon = require(Classes.Dragon)
 ----------------------------------------------
 
 
-
 ----------------------------------------------
 -------------- Private Methods ---------------
 ----------------------------------------------
@@ -32,7 +31,7 @@ end
 
 function DragonService:KnitStart()
     local dragonObject = Dragon.new("FrostDragon")
-    dragonObject:StartBehavior()
+    dragonObject:Start()
 end
 
 

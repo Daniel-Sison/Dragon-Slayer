@@ -3,17 +3,35 @@ local Players = game:GetService("Players")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
+--[[
+
+Usage:
+
+Public Methods:
+    - ToolService:ConfigureTool(tool, player)
+        - Use this on each tool that the player gets to make it active
+        - Currently will only set up on swords
+
+    - ToolService:UseToolAction(tool, tool)
+        - Will cause the tool to activate
+        - This is automatically connected to the tool once 
+          ToolService:ConfigureTool has been applied to it.
+
+]]
+
+
 -- Create the service:
 local ToolService = Knit.CreateService {
     Name = "ToolService",
 }
 
-local BASE_SWORD_DAMAGE = 5
+local BASE_SWORD_DAMAGE = 10
 
 local SWORD_ANIMATION_CYCLE = {
     ["SlashAnim"] = "StabAnim",
     ["StabAnim"] = "SlashAnim",
 }
+
 
 ----------------------------------------------
 -------------- Public Methods ----------------
@@ -28,10 +46,11 @@ function ToolService:ConfigureTool(tool : Tool?, player : Player?)
 
     -- Whenever a tool is equipped
     local equipConnection = tool.Equipped:Connect(function()
+        tool.Handle.Unsheath:Play()
 
         -- Whenever a tool is activated
         activationConnection = tool.Activated:Connect(function()
-            self:_useToolAction(player, tool)
+            self:UseToolAction(player, tool)
         end)
 
         table.insert(toolConnections, activationConnection)
@@ -69,100 +88,7 @@ end
 
 
 
-----------------------------------------------
--------------- Private Methods ---------------
-----------------------------------------------
-
-function ToolService:_dealDamageToTargetList(targetList : table?)
-    for index, model in ipairs(targetList) do
-        -- If the model doesn't have a humanoid, filter it
-        local humanoid : Humanoid = model:FindFirstChildOfClass("Humanoid")
-        if not humanoid then
-            continue
-        end
-
-        -- Filter through all humanoids that are dead
-        if humanoid.Health <= 0 then
-            continue
-        end
-
-        humanoid:TakeDamage(BASE_SWORD_DAMAGE)
-    end
-end
-
-
-function ToolService:_attackAnimation(animator : Animator?, character : Model?, tool : Tool?)
-
-    local nextAttack = tool:GetAttribute("NextAttack")
-
-    -- This will cycle the attack animations
-    if nextAttack then
-        tool:SetAttribute("NextAttack", SWORD_ANIMATION_CYCLE[nextAttack])
-    else
-        tool:SetAttribute("NextAttack", "SlashAnim")
-    end
-
-    local chosenAnim = tool.Animations:FindFirstChild(tool:GetAttribute("NextAttack"))
-    if not chosenAnim then
-        warn("The chosen animation cannot be found in the animations folder of the tool.")
-        return
-    end
-
-    -- Load the chosen animation into the track
-    local animationTrack = animator:LoadAnimation(chosenAnim)
-    animationTrack:Play()
-
-    local attachment : Attachment? = tool.Handle.Attachment
-    local debounce = true
-    local targetList = {}
-
-    -- While the sword is swinging, will raycast between points to detect hit
-    local swingConnection = game:GetService("RunService").Heartbeat:Connect(function()
-        if not debounce then
-            return
-        end
-
-        debounce = false
-        local oldPosition : Vector3? = attachment.WorldCFrame.Position
-
-        task.delay(0.1, function()
-            local newPosition : Vector3? = attachment.WorldCFrame.Position
-
-            -- Cast between the old position and the new position of the given attachment
-            -- Any results will be put into a table
-            local raycastResult = Raycaster:Cast(oldPosition, newPosition, {character})
-
-            debounce = true
-
-            if not raycastResult then
-                return
-            end
-
-            -- If the model is already in the TargetList, then return
-            local raycastModel : Model? = raycastResult.Instance:FindFirstAncestorWhichIsA("Model")
-            if table.find(targetList, raycastModel) then
-                return
-            end
-
-            -- If the model is not in the list, then add it
-            table.insert(targetList, raycastModel)
-        end)
-    end)
-
-    -- Wait for when the animationtrack ends
-    animationTrack.Stopped:Wait()
-
-    -- Disconnect the heartbeat
-    swingConnection:Disconnect()
-    swingConnection = nil
-
-    animationTrack:Destroy()
-
-    return targetList
-end
-
-
-function ToolService:_useToolAction(player : Player?, tool : Tool?)
+function ToolService:UseToolAction(player : Player?, tool : Tool?)
     local character = tool.Parent
 
     -- Return if the character doesn't exist
@@ -194,7 +120,13 @@ function ToolService:_useToolAction(player : Player?, tool : Tool?)
     tool:SetAttribute("Debounce", true)
     tool.Enabled = false
 
-    -- Load animation, deal damage
+    -- Cycle to the next animation
+    self:_cycleAnimation(tool)
+
+    -- Play the correct attack sound
+    self:_playAttackSound(tool)
+
+    -- Play the animation, return all targets hit during animation
     local targetList : table? = self:_attackAnimation(animator, character, tool)
     self:_dealDamageToTargetList(targetList)
 
@@ -204,6 +136,126 @@ function ToolService:_useToolAction(player : Player?, tool : Tool?)
 
     return
 end
+
+
+
+----------------------------------------------
+-------------- Private Methods ---------------
+----------------------------------------------
+
+-- Play a specified sound
+function ToolService:_playAttackSound(tool : Tool?)
+    if tool:GetAttribute("NextAttack") == "SlashAnim" then
+        tool.Handle.SwordSlash:Play()
+    elseif tool:GetAttribute("NextAttack") == "StabAnim" then
+        task.delay(0.75, function()
+            tool.Handle.SwordLunge:Play()
+        end)
+    end
+end
+
+-- Given a target list, deal damage to each one
+function ToolService:_dealDamageToTargetList(targetList : table?)
+    for index, model in ipairs(targetList) do
+        -- If the model doesn't have a humanoid, filter it
+        local humanoid : Humanoid = model:FindFirstChildOfClass("Humanoid")
+        if not humanoid then
+            continue
+        end
+
+        -- Filter through all humanoids that are dead
+        if humanoid.Health <= 0 then
+            continue
+        end
+
+        humanoid:TakeDamage(BASE_SWORD_DAMAGE)
+    end
+end
+
+
+ -- This will cycle the attack animations
+function ToolService:_cycleAnimation(tool : Tool?)
+    local nextAttack = tool:GetAttribute("NextAttack")
+
+    if nextAttack then
+        tool:SetAttribute("NextAttack", SWORD_ANIMATION_CYCLE[nextAttack])
+    else
+        -- If the attribute "NextAttack" doesn't exist, then
+        -- create a new one.
+        tool:SetAttribute("NextAttack", "SlashAnim")
+    end
+end
+
+
+function ToolService:_attackAnimation(animator : Animator?, character : Model?, tool : Tool?)
+
+    -- Find the animation of the next attack
+    local chosenAnim = tool.Animations:FindFirstChild(tool:GetAttribute("NextAttack"))
+    if not chosenAnim then
+        warn("The chosen animation cannot be found in the animations folder of the tool.")
+        return
+    end
+
+    -- Load the chosen animation into the track
+    local animationTrack = animator:LoadAnimation(chosenAnim)
+    animationTrack:Play()
+
+    -- Create an attachment
+    -- During the animation, the script will raycast between the attachments to see
+    -- if there were any targets that intersected
+    local attachment : Attachment? = tool.Handle.Attachment
+    local debounce = true
+    local targetList = {}
+
+    -- While the sword is swinging, will raycast between points to detect hit
+    local swingConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        if not debounce then
+            return
+        end
+
+        debounce = false
+        local oldPosition : Vector3? = attachment.WorldCFrame.Position
+
+        task.delay(0.1, function()
+            local newPosition : Vector3? = attachment.WorldCFrame.Position
+
+            -- Use a RAYCAST system instead of TOUCH for more accurate hitboxes
+
+            local raycastResult = Raycaster:Cast(oldPosition, newPosition, {character})
+            -- Cast between the old position and the new position of the given attachment
+            -- Any results will be put into a table
+
+            debounce = true
+
+            
+            if not raycastResult then
+                return
+            end
+
+            -- If the model is already in the TargetList, then return
+            local raycastModel : Model? = raycastResult.Instance:FindFirstAncestorWhichIsA("Model")
+            if table.find(targetList, raycastModel) then
+                return
+            end
+
+            -- If the model is not in the list, then add it
+            table.insert(targetList, raycastModel)
+        end)
+    end)
+
+    -- Wait for when the animationtrack ends
+    animationTrack.Stopped:Wait()
+
+    -- Disconnect the heartbeat
+    swingConnection:Disconnect()
+    swingConnection = nil
+
+    -- Destroy the animation track since it's done playing
+    animationTrack:Destroy()
+
+    return targetList
+end
+
 
 
 -- Clear specified connection table given
