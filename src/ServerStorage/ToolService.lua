@@ -25,7 +25,7 @@ local ToolService = Knit.CreateService {
     Name = "ToolService",
 }
 
-local BASE_SWORD_DAMAGE = 10
+local BASE_SWORD_DAMAGE = 50
 
 local SWORD_ANIMATION_CYCLE = {
     ["SlashAnim"] = "StabAnim",
@@ -36,6 +36,18 @@ local SWORD_ANIMATION_CYCLE = {
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
+
+function ToolService:AddToolToPlayer(toolName : string?, player : Player?)
+    local targetWeapon = ReplicatedStorage.Assets.Weapons:FindFirstChild(toolName, true)
+    if not targetWeapon then
+        warn("Weapon of the name " .. toolName .. " cannot be found in weapons folder.")
+    end
+
+    targetWeapon = targetWeapon:Clone()
+    targetWeapon.Parent = player.Backpack
+
+    self:ConfigureTool(targetWeapon, player)
+end
 
 
 -- Setup each of the tool's connections and such
@@ -298,8 +310,8 @@ function ToolService:KnitStart()
     Players.PlayerAdded:Connect(function(player : Player?)
         local characterAddedConnection = player.CharacterAdded:Connect(function(character : Model?)
             -- Starter weapon
-            ReplicatedStorage.Assets.Weapons.Swords.ClassicSword:Clone().Parent = player.Backpack
-
+            ReplicatedStorage.Assets.Weapons.Starter["Wood Stick"]:Clone().Parent = player.Backpack
+           
             -- Setup the backpack
             self:_configureBackpack(player)
         end)

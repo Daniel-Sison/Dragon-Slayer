@@ -67,6 +67,7 @@ function StatsGuiController:KnitStart()
     CoinService.UpdateCoinUI:Connect(function(newCoinAmount : number?)
         self:UpdateCoins(newCoinAmount)
     end)
+
 end
 
 

@@ -1,5 +1,9 @@
-local CameraController = {}
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
+local CameraController = Knit.CreateController {
+    Name = "CameraController",
+}
 
 ----------- Services -----------
 
@@ -15,7 +19,13 @@ local blur = Instance.new("BlurEffect")
 blur.Size = 15
 
 
------------ Public Functions -----------
+----------------------------------------------
+-------------- Public Methods ----------------
+----------------------------------------------
+
+function CameraController:ResetCameraToDefault()
+	camera.CameraType = Enum.CameraType.Custom
+end
 
 -- Snappy way to toggle blur in and out
 function CameraController:ToggleBlur(value, size)
@@ -67,6 +77,24 @@ function CameraController:CameraToPart(part, duration, easingStyle, easingDirect
 	
 	return tween
 end
+
+
+
+----------------------------------------------
+-------------- Lifetime Methods --------------
+----------------------------------------------
+
+function CameraController:KnitInit()
+
+end
+
+function CameraController:KnitStart()
+	local camPositions = workspace:WaitForChild("CameraPositions")
+	for index, item in ipairs(camPositions:GetDescendants()) do
+		item.Transparency = 1
+	end
+end
+
 
 
 

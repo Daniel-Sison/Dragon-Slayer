@@ -1,6 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
-
+local GeneralTween = require(ReplicatedStorage.Source.Modules.General.GeneralTween)
 
 local CoinService = Knit.CreateService {
     Name = "CoinService",
@@ -27,11 +27,145 @@ function CoinService:CoinCollected(player : Player?)
     self.Client.UpdateCoinUI:Fire(player, coinAmount)
 end
 
+
+-- Spawn a collection of coins with a specified amount
+function CoinService:SpawnCoinsAt(position : Vector3?, amount : number?)
+
+    -- Returns x and z positions based on angle and radius given
+    local function getXAndZPositions(angle, radius)
+        local x = math.cos(angle) * radius
+        local z = math.sin(angle) * radius
+        return x, z
+    end
+
+    -- Table to hold all the coins
+    local allCoins = {}
+
+    -- Spawn the coins
+    for i = 1, amount do
+        local coin = ReplicatedStorage.Assets.Misc.Coin:Clone()
+        coin.Position = position
+        coin.Parent = workspace.EffectStorage
+
+        table.insert(allCoins, coin)
+
+        local angle = i * (2 * math.pi / amount)
+		local x, z = getXAndZPositions(angle, 10)
+		
+		local targetPosition = (coin.CFrame * CFrame.new(0, x, z)).Position
+        local launchVector = position - (targetPosition - position).Unit
+
+        -- Fling the coins in a certain vector
+        coin:ApplyImpulse(launchVector)
+    end
+
+    task.delay(1, function()
+        self:_setupCoinsForCollection(allCoins)
+    end)
+end
+
 ----------------------------------------------
 -------------- Private Methods ---------------
 ----------------------------------------------
 
+-- Watch the coins to be collected
+function CoinService:_setupCoinsForCollection(allCoins : table?)
+    local heartBeatConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        self:_checkIfCoinCollected(allCoins)
+    end)
 
+    -- After 30 seconds, the coins expire and clean up
+    task.delay(30, function()
+        for _, coin in ipairs(allCoins) do
+            if not coin:IsDescendantOf(workspace) then
+                continue
+            end
+
+            coin:Destroy()
+        end
+
+        allCoins = nil
+        heartBeatConnection:Disconnect()
+        heartBeatConnection = nil
+    end)
+end
+
+
+-- Run through each coin and check if it has been collected yet
+function CoinService:_checkIfCoinCollected(allCoins : table?)
+    for _, coin in ipairs(allCoins) do
+        if coin:GetAttribute("Collected") then
+            continue
+        end
+
+        local closestPlayerRoot : BasePart? = self:_findClosestPlayerRoot(coin)
+        if not closestPlayerRoot then
+            continue
+        end
+
+        coin:SetAttribute("Collected", true)
+
+        --coin.Anchored = true
+        --coin.CanCollide = false
+
+        local collectTween = GeneralTween:SimpleTween(
+            coin,
+            {Size = Vector3.new(0.01, 0.01, 0.01)},
+            0.35,
+            Enum.EasingStyle.Back,
+            Enum.EasingDirection.In
+        )
+
+        collectTween.Completed:Connect(function()
+            local player = game.Players:GetPlayerFromCharacter(closestPlayerRoot.Parent)
+            if not player then 
+                return 
+            end
+
+            self:CoinCollected(player)
+
+            coin:Destroy()
+        end)
+    end
+end
+
+-- Find the closest player root part
+function CoinService:_findClosestPlayerRoot(coin : BasePart?)
+    for index, player in ipairs(game.Players:GetChildren()) do
+        if not player:IsA("Player") then
+            continue
+        end
+
+        local humanoid : Humanoid = player.Character:FindFirstChild("Humanoid")
+        if not humanoid then
+            return
+        end
+
+        if humanoid.Health <= 0 then
+            return
+        end
+
+        local root : BasePart? = player.Character:FindFirstChild("HumanoidRootPart")
+        if not root then
+            continue
+        end
+
+        if (root.Position - coin.Position).Magnitude <= 10 then
+            return root
+        end
+    end
+
+    return
+end
+
+-- All coins follow this coin's cframe
+function CoinService:_spinCoinIdeal()
+    self.CoinIdeal.CFrame = self.CoinIdeal.CFrame * CFrame.fromEulerAnglesXYZ(math.rad(90), 0, 0)
+
+    task.delay(0.5, function()
+        self:_spinCoinIdeal()
+    end)
+end
 ----------------------------------------------
 -------------- Lifetime Methods --------------
 ----------------------------------------------
@@ -41,7 +175,10 @@ function CoinService:KnitInit()
 end
 
 function CoinService:KnitStart()
-    
+
+    self.CoinIdeal = workspace.Props:WaitForChild("CoinIdeal")
+    self:_spinCoinIdeal()
+
 end
 
 

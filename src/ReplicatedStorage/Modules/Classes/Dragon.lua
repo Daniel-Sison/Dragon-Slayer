@@ -1,13 +1,50 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Knit = require(ReplicatedStorage.Packages.Knit)
 local Assets = ReplicatedStorage.Assets
 local GeneralTween = require(ReplicatedStorage.Source.Modules.General.GeneralTween)
 local ParticleHandler = require(ReplicatedStorage.Source.Modules.General.ParticleHandler)
 local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
+
+
+--[[
+
+Usage:
+
+Public Methods:
+    - The Dragon superclass
+
+    - Dragon.new(bodyName, spawnPosition)
+        - Constructor to initiate the object
+
+    - Dragon:Start()
+        - Needs to be called after being initialized
+        - Begins the dragon's behavior
+
+
+    ----------
+    - The following functions will automatically be activated after Dragon:Start() is called
+    ----------
+
+
+    - Dragon:MoveDragonTo(position)
+        - Makes the Dragon walk to a certain position
+
+    - Dragon:Attack()
+        - If self.Target has been set, then will attack that target
+    
+    - Dragon:Clean()
+        - Cleans up the dragon and its connections
+
+    - Dragon:Roam()
+        - Dragon will roam around its origin point
+]]
+
+
+
 local Dragon = {}
 Dragon.__index = Dragon
-
 
 ----------------------------------------------
 ----------------- CONSTANTS ------------------
@@ -56,13 +93,14 @@ function Dragon.new(bodyName : string?, spawnPosition : Vector3?)
     DragonObject.SightRange = 100
     DragonObject.Level = 1
     DragonObject.OriginPosition = DragonObject.HumanoidRootPart.Position
-
+    DragonObject.WeaponDropChance = 80 -- This means 80% chance to drop a sword
 
     -- Misc
     DragonObject.NextIdleBehavior = BEHAVIOR_CYCLE["Roam"]
     DragonObject.NextAttack = ATTACK_CYCLE["FireBreath"]
     DragonObject.PlayingAnimation = nil
     DragonObject.Target = nil
+
 
     return DragonObject
 end
@@ -203,7 +241,7 @@ function Dragon:_startBehaviorLoop()
         end
     end
 
-    -- Restart behavior loop after one second
+    -- Restart behavior loop after two seconds
     task.delay(2, function()
         self:_startBehaviorLoop()
     end)
@@ -217,9 +255,27 @@ function Dragon:_setupHumanoidConnections()
 
         deathConnection:Disconnect()
         deathConnection = nil
+
+        -- Coin drop
+        Knit.GetService("CoinService"):SpawnCoinsAt(
+            self.HumanoidRootPart.Position + Vector3.new(0, 5, 0),
+            10 * self.Level
+        )
+
+        -- Roll for a chance to get a weapon
+        -- local randomNumber = math.random(1, 100)
+        -- if randomNumber > self.WeaponDropChance then
+        --     return
+        -- end
+
+        -- If the random number is less than the drop chance,,
+        -- then drop a random weapon
+        Knit.GetService("WeaponDropService"):DropRandomWeapon(
+            self.HumanoidRootPart.Position + Vector3.new(0, 5, 0),
+            self.Level
+        )
     end)
 end
-
 
 
 function Dragon:_lerp(a, b, t)
@@ -242,25 +298,22 @@ function Dragon:_runFireBreath()
 
     local targetPosition = targetRoot.Position
 
-    local fireball = Assets.Effects.Fireball:Clone()
+    -- The fireball part being launched
+    local fireball : BasePart? = Assets.Effects.Fireball:Clone()
     fireball.Parent = workspace.EffectStorage
     fireball.CFrame = self.Mouth.CFrame
 
-    local fireSound = ReplicatedStorage.Assets.Sounds.Fireball:Clone()
+    -- Spawn the sound inside the fireball as it moves
+    local fireSound : Sound? = ReplicatedStorage.Assets.Sounds.FireballSound:Clone()
     fireSound.Parent = fireball
     fireSound:Play()
 
-    local targetSound = Assets.Sounds:FindFirstChild("Fireball", true)
-    if targetSound then
-        targetSound = targetSound:Clone()
-        targetSound.Parent = fireball
-    end
-
-    local middleCFrame = self.Mouth.CFrame:Lerp(self.Mouth.CFrame, 0.5)
+    -- Create a CFrame between the two CFrames for generating Bezier curves
+    local middleCFrame : CFrame? = self.Mouth.CFrame:Lerp(self.Mouth.CFrame, 0.5)
     middleCFrame = middleCFrame + Vector3.new(math.random(-10, 10), math.random(5, 10), math.random(-10, 10))
 
-    local numberValue = Instance.new("NumberValue")
-    local debounce = true
+    local numberValue : NumberValue? = Instance.new("NumberValue")
+    local debounce : boolean? = true
 
     local connection
     connection = numberValue.Changed:Connect(function()
@@ -276,6 +329,7 @@ function Dragon:_runFireBreath()
         if debounce == true then
             debounce = false
 
+            -- Emit particles as the ball is flying
             ParticleHandler:EmitInstant(fireball)
 
             task.delay(0.01, function()
