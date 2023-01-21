@@ -11,10 +11,32 @@ local player = game.Players.LocalPlayer
 
 local CameraController
 local StatsGuiController
+local InitialLoadController
+
+local CharacterSetupService
 
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
+
+function IntroGuiController:FadeInAndOut()
+    local fadeIn : Tween? = GeneralUI:SimpleTween(
+        self.Container,
+        {BackgroundTransparency = 0},
+        0.5
+    )
+
+    fadeIn.Completed:Connect(function()
+        task.delay(0.5, function()
+            warn("Fading out")
+            GeneralUI:SimpleTween(
+                self.Container,
+                {BackgroundTransparency = 1},
+                0.5
+            )
+        end)
+    end)
+end
 
 
 ----------------------------------------------
@@ -32,6 +54,8 @@ function IntroGuiController:_animateLoadingBar()
 end
 
 function IntroGuiController:_runProgram()
+    self.Gui.Enabled = true
+
     local loadingBarTween : Tween? = self:_animateLoadingBar()
     loadingBarTween.Completed:Wait()
 
@@ -102,6 +126,7 @@ function IntroGuiController:_transitionToPlayer()
 
         fadeOut.Completed:Connect(function()
             StatsGuiController:ShowAllUI()
+            InitialLoadController:IntroFinished()
         end)
     end)
 end
@@ -113,12 +138,15 @@ end
 function IntroGuiController:KnitInit()
     CameraController = Knit.GetController("CameraController")
     StatsGuiController = Knit.GetController("StatsGuiController")
+    InitialLoadController = Knit.GetController("InitialLoadController")
+
+    CharacterSetupService = Knit.GetService("CharacterSetupService")
 end
+
 
 function IntroGuiController:KnitStart()
     local targetName = string.gsub(script.Name, "Controller", "")
     self.Gui = player.PlayerGui:WaitForChild(targetName)
-    self.Gui.Enabled = true
 
     self.CameraPositions = workspace:WaitForChild("CameraPositions")
 
@@ -145,6 +173,10 @@ function IntroGuiController:KnitStart()
         debounce = false
 
         self:_transitionToPlayer()
+    end)
+
+    CharacterSetupService.FadeTransition:Connect(function()
+        self:FadeInAndOut()
     end)
 
     self:_runProgram()

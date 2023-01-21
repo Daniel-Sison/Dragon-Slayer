@@ -309,9 +309,6 @@ function ToolService:KnitStart()
 
     Players.PlayerAdded:Connect(function(player : Player?)
         local characterAddedConnection = player.CharacterAdded:Connect(function(character : Model?)
-            -- Starter weapon
-            ReplicatedStorage.Assets.Weapons.Starter["Wood Stick"]:Clone().Parent = player.Backpack
-           
             -- Setup the backpack
             self:_configureBackpack(player)
         end)

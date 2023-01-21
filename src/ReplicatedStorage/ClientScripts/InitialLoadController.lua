@@ -7,6 +7,7 @@ local InitialLoadController = Knit.CreateController {
 }
 
 local CameraController
+local CharacterSetupService
 
 local player = game.Players.LocalPlayer
 
@@ -14,6 +15,9 @@ local player = game.Players.LocalPlayer
 -------------- Public Methods ----------------
 ----------------------------------------------
 
+function InitialLoadController:IntroFinished()
+    CharacterSetupService:StartPlayer()
+end
 
 ----------------------------------------------
 -------------- Private Methods ---------------
@@ -26,6 +30,7 @@ local player = game.Players.LocalPlayer
 
 function InitialLoadController:KnitInit()
     CameraController = Knit.GetController("CameraController")
+    CharacterSetupService = Knit.GetService("CharacterSetupService")
 end
 
 function InitialLoadController:KnitStart()
@@ -34,12 +39,19 @@ function InitialLoadController:KnitStart()
     local camPositions = workspace:WaitForChild("CameraPositions")
     local camera = workspace.CurrentCamera
 
-    player.CharacterAdded:Connect(function(character)
+    local initialLoadIn = true
+
+    player.CharacterAdded:Connect(function(character : Model?)
+        if not initialLoadIn then
+            return
+        end
+
+        initialLoadIn = false
         task.wait(4)
 
         camera.CameraType = Enum.CameraType.Scriptable
         camera.CFrame = camPositions.StartCam1.CFrame
-     
+    
         CameraController:ToggleBlur(true, 15)
     end)
 end
