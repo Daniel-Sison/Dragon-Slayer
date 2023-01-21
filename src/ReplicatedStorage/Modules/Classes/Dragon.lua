@@ -252,6 +252,7 @@ function Dragon:_setupHumanoidConnections()
     local deathConnection
     deathConnection = self.Humanoid.Died:Connect(function()
         self:_playAnimation("Death", true)
+        self:_deleteBody()
 
         deathConnection:Disconnect()
         deathConnection = nil
@@ -259,21 +260,44 @@ function Dragon:_setupHumanoidConnections()
         -- Coin drop
         Knit.GetService("CoinService"):SpawnCoinsAt(
             self.HumanoidRootPart.Position + Vector3.new(0, 5, 0),
-            10 * self.Level
+            (10 * self.Level) + math.random(1, 10)
         )
 
         -- Roll for a chance to get a weapon
-        -- local randomNumber = math.random(1, 100)
-        -- if randomNumber > self.WeaponDropChance then
-        --     return
-        -- end
+        local randomNumber = math.random(1, 100)
+        if randomNumber > self.WeaponDropChance then
+            return
+        end
 
         -- If the random number is less than the drop chance,,
         -- then drop a random weapon
         Knit.GetService("WeaponDropService"):DropRandomWeapon(
-            self.HumanoidRootPart.Position + Vector3.new(0, 5, 0),
+            self.HumanoidRootPart.Position + Vector3.new(0, 3, 0),
             self.Level
         )
+    end)
+end
+
+function Dragon:_deleteBody()
+    for index, part in ipairs(self.Body:GetDescendants()) do
+        if not part:IsA("BasePart") then
+            continue
+        end
+
+        part.Anchored = true
+        part.CanCollide = false
+
+        GeneralTween:SimpleTween(
+            part,
+            {Transparency = 1},
+            1,
+            Enum.EasingStyle.Quad,
+            Enum.EasingDirection.Out
+        )
+    end
+
+    task.delay(1.5, function()
+        self:Clean()
     end)
 end
 

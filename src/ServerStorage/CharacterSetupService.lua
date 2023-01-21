@@ -10,18 +10,34 @@ local CharacterSetupService = Knit.CreateService {
 }
 
 local ToolService
+local DragonService
+local LeaderboardService
+local PortalService
 
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
 
-function CharacterSetupService.Client:StartPlayer(player : Player?)
-    self.Server:TeleportPlayer(player, "Level_1", false)
-    self.Server:GivePlayerStarterTool(player)
+function CharacterSetupService:NextLevel()
+    local player = game.Players:FindFirstChildOfClass("Player")
+    
+    local currentLevel = LeaderboardService:GetData(player, "Level")
+    currentLevel += 1
+
+    LeaderboardService:SetData(player, "Level", currentLevel)
+    
+    PortalService:OpenClosestPortal(player)
 end
 
-function CharacterSetupService:GivePlayerStarterTool(player : Player?)
+
+function CharacterSetupService.Client:StartPlayer(player : Player?)
+    self.Server:TeleportPlayer(player, "Level_1", false)
+    self.Server:LoadToolAndEnemies(player)
+end
+
+function CharacterSetupService:LoadToolAndEnemies(player : Player?)
     ToolService:AddToolToPlayer("Wood Stick", player)
+    DragonService:SpawnDragons("Level_1")
 end
 
 function CharacterSetupService:TeleportPlayer(player : Player?, targetLocationName : string?, transition : boolean?)
@@ -64,12 +80,20 @@ end
 
 function CharacterSetupService:KnitInit()
     ToolService = Knit.GetService("ToolService")
+    DragonService = Knit.GetService("DragonService")
+    LeaderboardService = Knit.GetService("LeaderboardService")
+    PortalService = Knit.GetService("PortalService")
 end
 
 function CharacterSetupService:KnitStart()
     self.StartLocations = workspace:WaitForChild("StartLocations")
 
-    for _, part in ipairs(self.StartLocations:GetChildren()) do
+    for _, part in ipairs(self.StartLocations:GetDescendants()) do
+        if not part:IsA("BasePart") then
+            continue
+        end
+
+        part.Anchored = true
         part.CanCollide = false
         part.CanTouch = false
         part.CanQuery = false

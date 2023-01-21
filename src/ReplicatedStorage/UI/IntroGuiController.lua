@@ -28,12 +28,13 @@ function IntroGuiController:FadeInAndOut()
 
     fadeIn.Completed:Connect(function()
         task.delay(0.5, function()
-            warn("Fading out")
+
             GeneralUI:SimpleTween(
                 self.Container,
                 {BackgroundTransparency = 1},
                 0.5
             )
+            
         end)
     end)
 end
@@ -179,7 +180,11 @@ function IntroGuiController:KnitStart()
         self:FadeInAndOut()
     end)
 
-    self:_runProgram()
+    if game:GetService("RunService"):IsStudio() then
+        self:_transitionToPlayer()
+    else
+        self:_runProgram()
+    end
 end
 
 

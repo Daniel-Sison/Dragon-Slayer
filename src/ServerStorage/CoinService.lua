@@ -30,14 +30,6 @@ end
 
 -- Spawn a collection of coins with a specified amount
 function CoinService:SpawnCoinsAt(position : Vector3?, amount : number?)
-
-    -- Returns x and z positions based on angle and radius given
-    local function getXAndZPositions(angle, radius)
-        local x = math.cos(angle) * radius
-        local z = math.sin(angle) * radius
-        return x, z
-    end
-
     -- Table to hold all the coins
     local allCoins = {}
 
@@ -49,17 +41,11 @@ function CoinService:SpawnCoinsAt(position : Vector3?, amount : number?)
 
         table.insert(allCoins, coin)
 
-        local angle = i * (2 * math.pi / amount)
-		local x, z = getXAndZPositions(angle, 10)
-		
-		local targetPosition = (coin.CFrame * CFrame.new(0, x, z)).Position
-        local launchVector = position - (targetPosition - position).Unit
-
         -- Fling the coins in a certain vector
-        coin:ApplyImpulse(launchVector)
+        coin:ApplyImpulse(Vector3.new(0, coin:GetMass() * 90, 0))
     end
 
-    task.delay(1, function()
+    task.delay(2, function()
         self:_setupCoinsForCollection(allCoins)
     end)
 end

@@ -34,12 +34,13 @@ function InitialLoadController:KnitInit()
 end
 
 function InitialLoadController:KnitStart()
-   -- task.wait(1)
-
     local camPositions = workspace:WaitForChild("CameraPositions")
     local camera = workspace.CurrentCamera
 
     local initialLoadIn = true
+    if game:GetService("RunService"):IsStudio() then
+        initialLoadIn = false
+    end
 
     player.CharacterAdded:Connect(function(character : Model?)
         if not initialLoadIn then
