@@ -4,6 +4,9 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 -- Create the service:
 local DragonService = Knit.CreateService {
     Name = "DragonService",
+    Client = {
+        LinkDragonToUI = Knit.CreateSignal(), -- Create the signal
+    },
 }
 
 local Modules = ReplicatedStorage.Source.Modules
@@ -16,14 +19,25 @@ local FrostDragon = require(Classes.FrostDragon)
 local CharacterSetupService
 
 
+local CUSTOM_DRAGONS = {
+    ["Poison Dragon"] = "Bright green", -- DOT damage
+    ["Earth Dragon"] = "Pine Cone", -- stuns
+    ["Lava Dragon"] = "Bright orange", -- places lava pools
+    ["Shadow Dragon"] = "Really black", -- blinds
+    ["Vampire Dragon"] = "White", -- steals health
+    ["Electric Dragon"] = "New Yeller", -- stuns
+}
+
+
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
 
-function DragonService:SelectRandomDragon(locationPart : BasePart?)
-    local targetDragonName : string? = self:_randomDragonName()
+function DragonService:SelectRandomDragon(locationPart : BasePart?, level : number?)
+    local originDragonName : string? = self:_randomDragonName()
+    local targetDragonName : string? = string.gsub(originDragonName, " ", "")
 
-    local targetModule = Classes:FindFirstChild(targetDragonName)
+    local targetModule : ModuleScript? = Classes:FindFirstChild(targetDragonName)
     if not targetModule then
         warn("No dragon of this name exists in classes: ", targetDragonName)
         return
@@ -31,13 +45,19 @@ function DragonService:SelectRandomDragon(locationPart : BasePart?)
 
     targetModule = require(targetModule)
 
-    local dragonObject = targetModule.new(locationPart.Position)
+    local dragonObject = targetModule.new(locationPart.Position, level)
     dragonObject:Start()
+
+    local usedDragon : Model? = Assets.Dragons:FindFirstChild(originDragonName)
+    if usedDragon then
+        usedDragon.Parent = Assets.UsedDragons
+    end
 
     return dragonObject
 end
 
-function DragonService:SpawnDragons(locationName : string?)
+
+function DragonService:SpawnDragons(locationName : string?, level : number?)
     local spawnFolder : Folder? = self.StartLocations:FindFirstChild(locationName .. "_Dragons")
     if not spawnFolder then
         warn("No folder of this location name.")
@@ -49,13 +69,45 @@ function DragonService:SpawnDragons(locationName : string?)
             continue
         end
 
-        self:SelectRandomDragon(part)
+        local dragonObject = self:SelectRandomDragon(part, level)
+        self:_linkDragonUI(dragonObject)
+    end
+end
+
+
+function DragonService:LoadCustomDragons()
+    for dragonName, dragonColor in pairs(CUSTOM_DRAGONS) do
+        local blueprintDragon : Model? = Assets.Misc.BlueprintDragon:Clone()
+        blueprintDragon.Name = dragonName
+
+        for _, part in ipairs(blueprintDragon:GetDescendants()) do
+            if not part:IsA("BasePart") then
+                continue
+            end
+    
+            if part.BrickColor.Name == "White" then
+                part.BrickColor = BrickColor.new(dragonColor)
+            end
+        end
+
+        blueprintDragon.Parent = Assets.Dragons
     end
 end
 
 ----------------------------------------------
 -------------- Private Methods ---------------
 ----------------------------------------------
+
+function DragonService:_linkDragonUI(dragonObject)
+    for index, player in ipairs(game.Players:GetChildren()) do
+        if not player then
+            continue
+        end
+
+        self.Client.LinkDragonToUI:Fire(player, dragonObject.Humanoid, dragonObject.HumanoidRootPart, dragonObject.Level)
+    end
+end
+
 
 function DragonService:_randomDragonName()
     local availableDragons : table? = Assets.Dragons:GetChildren()
@@ -76,6 +128,7 @@ function DragonService:_randomDragonName()
 end
 
 
+
 ----------------------------------------------
 -------------- Lifetime Methods --------------
 ----------------------------------------------
@@ -88,13 +141,19 @@ function DragonService:KnitStart()
     self.StartLocations = workspace:WaitForChild("StartLocations")
     self.DragonContainer = workspace:WaitForChild("DragonContainer")
 
+    self:LoadCustomDragons()
+
     self.DragonContainer.ChildRemoved:Connect(function()
         if self.DragonContainer:FindFirstChildOfClass("Model") then
             return
         end
 
-        CharacterSetupService:NextLevel()        
+        CharacterSetupService:LevelComplete()        
     end)
+
+    -- local targetModule = require(Classes:FindFirstChild("LavaDragon"))
+    -- local dragonObject = targetModule.new(nil, 1)
+    -- dragonObject:Start()
 end
 
 

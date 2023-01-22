@@ -304,25 +304,7 @@ function ToolService:KnitInit()
 end
 
 function ToolService:KnitStart()
-    -- Create a connections table that will delete connections to prevent memory leaks
-    self.Connections = {}
-
-    Players.PlayerAdded:Connect(function(player : Player?)
-        local characterAddedConnection = player.CharacterAdded:Connect(function(character : Model?)
-            -- Setup the backpack
-            self:_configureBackpack(player)
-        end)
-
-        table.insert(self.Connections, characterAddedConnection)
-    end)
-
-    Players.PlayerRemoving:Connect(function(player : Player?)
-        -- Disconnect the connection if the dictionary key is the player
-        if self.Connections[player] then
-            self.Connections[player]:Disconnect()
-            self.Connections[player] = nil
-        end
-    end)
+    
 end
 
 

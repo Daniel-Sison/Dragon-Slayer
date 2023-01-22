@@ -43,11 +43,11 @@ function CoinService:SpawnCoinsAt(position : Vector3?, amount : number?)
 
         -- Fling the coins in a certain vector
         coin:ApplyImpulse(Vector3.new(0, coin:GetMass() * 90, 0))
+
+        task.wait(0.02)
     end
 
-    task.delay(2, function()
-        self:_setupCoinsForCollection(allCoins)
-    end)
+    self:_setupCoinsForCollection(allCoins)
 end
 
 ----------------------------------------------

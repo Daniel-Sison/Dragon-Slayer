@@ -94,6 +94,8 @@ function Dragon.new(bodyName : string?, spawnPosition : Vector3?)
     DragonObject.Level = 1
     DragonObject.OriginPosition = DragonObject.HumanoidRootPart.Position
     DragonObject.WeaponDropChance = 80 -- This means 80% chance to drop a sword
+    DragonObject.BaseFireballDamage = 5
+    DragonObject.BaseBiteDamage = 10
 
     -- Misc
     DragonObject.NextIdleBehavior = BEHAVIOR_CYCLE["Roam"]
@@ -158,17 +160,14 @@ function Dragon:Attack()
 
         local connection
         local animation = self:_playAnimation("WingBeat", true)
+        if not animation then
+            return
+        end
         connection = animation.Stopped:Connect(function()
             connection:Disconnect()
             connection = nil
 
-            if not Raycaster:IsFacing(self.Body, targetRoot.Parent) then
-                return
-            end
-
-            if (self.Mouth.Position - targetRoot.Position).Magnitude < 20 then
-                targetHumanoid:TakeDamage(20)
-            end
+            self:Bite(targetRoot, targetHumanoid)
         end)
 
     elseif self.NextAttack == "FireBreath" then
@@ -176,6 +175,9 @@ function Dragon:Attack()
 
         local connection
         local animation = self:_playAnimation("FireBreath", true)
+        if not animation then
+            return
+        end
         connection = animation.Stopped:Connect(function()
             connection:Disconnect()
             connection = nil
@@ -208,7 +210,69 @@ function Dragon:MoveDragonTo(position : Vector3?)
     end)
 end
 
+--- These methods will probably be overridden by specific class.
 
+function Dragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
+    if not Raycaster:IsFacing(self.Body, targetRoot.Parent) then
+        return
+    end
+
+    if (self.Mouth.Position - targetRoot.Position).Magnitude < 20 then
+        targetHumanoid:TakeDamage(self.BaseBiteDamage)
+    end
+end
+
+
+function Dragon:GetFireProjectile()
+    local fireball = Assets.Effects.Fireball:Clone()
+    fireball.Parent = workspace.EffectStorage
+    fireball.CFrame = self.Mouth.CFrame
+
+    return fireball
+end
+
+
+function Dragon:GetFireExplosion()
+    local explosion = Assets.Effects.FireballPop:Clone()
+    return explosion
+end
+
+
+function Dragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+   
+end
+
+function Dragon:Burn(humanoid : Humanoid?, root : BasePart?)
+    local flames : ParticleEmitter? = Assets.Effects.Flames:Clone()
+    flames.Parent = root
+
+    for i = 1, 4 do
+        task.delay(1 * i, function()
+            if humanoid and humanoid.Health > 0 then
+                humanoid:TakeDamage(1)
+            end
+
+            if i == 4 then
+                flames:Destroy()
+            end
+        end)
+    end
+end
+
+
+function Dragon:RecolorParticles(container : any?, colorSequence : ColorSequence?)
+    for index, particle in ipairs(container:GetDescendants()) do
+        if not particle:IsA("ParticleEmitter") then
+            continue
+        end
+
+        if particle:GetAttribute("NoColorChange") then
+            continue
+        end
+
+        particle.Color = colorSequence
+    end
+end
 
 ----------------------------------------------
 ---------------- Sub Methods -----------------
@@ -247,12 +311,23 @@ function Dragon:_startBehaviorLoop()
     end)
 end
 
+
+
 -- When the dragon dies, these connections clean up
 function Dragon:_setupHumanoidConnections()
+    self.Humanoid.MaxHealth = self.Level * 100
+    self.Humanoid.Health = self.Humanoid.MaxHealth
+
     local deathConnection
     deathConnection = self.Humanoid.Died:Connect(function()
-        self:_playAnimation("Death", true)
-        self:_deleteBody()
+        local deathAnim = self:_playAnimation("Death", true)
+        local connection
+        connection = deathAnim.Stopped:Connect(function()
+            connection:Disconnect()
+            connection = nil
+
+            self:_deleteBody()
+        end)
 
         deathConnection:Disconnect()
         deathConnection = nil
@@ -320,12 +395,14 @@ function Dragon:_runFireBreath()
         return
     end
 
+    if self.Humanoid.Health <= 0 then
+        return
+    end
+
     local targetPosition = targetRoot.Position
 
     -- The fireball part being launched
-    local fireball : BasePart? = Assets.Effects.Fireball:Clone()
-    fireball.Parent = workspace.EffectStorage
-    fireball.CFrame = self.Mouth.CFrame
+    local fireball : BasePart? = self:GetFireProjectile()
 
     -- Spawn the sound inside the fireball as it moves
     local fireSound : Sound? = ReplicatedStorage.Assets.Sounds.FireballSound:Clone()
@@ -374,7 +451,9 @@ function Dragon:_runFireBreath()
         connection:Disconnect()
         connection = nil
 
-        ParticleHandler:PlayParticle("FireballPop", fireball)
+        local explosionBall = self:GetFireExplosion()
+
+        ParticleHandler:PlayParticleGiven(explosionBall, fireball)
         self:_fireballPopDamage(targetPosition)
 
         game.Debris:AddItem(fireball, 1)
@@ -406,7 +485,8 @@ function Dragon:_fireballPopDamage(explosionPosition : Vector3?)
 
         local humanoid : Humanoid? = model:FindFirstChild("Humanoid")
         if humanoid then
-            humanoid:TakeDamage(10)
+            humanoid:TakeDamage(self.BaseFireballDamage)
+            self:DealElementalEffect(humanoid, root, explosionPosition)
         end
     end
 end
@@ -426,6 +506,10 @@ end
 
 -- Stop and clean up all animations that are playing
 function Dragon:_stopAnimations()
+    if self.CurrentAnimation and self.CurrentAnimation.AnimationId == ANIMATION_LIST["Death"] then
+        return
+    end
+
     if self.CurrentAnimationTrack then
         self.CurrentAnimationTrack:Stop(0.5)
 

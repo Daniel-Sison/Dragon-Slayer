@@ -8,6 +8,8 @@ local PortalService = Knit.CreateService {
 
 local Effects = ReplicatedStorage.Assets.Effects
 
+local CharacterSetupService
+
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
@@ -18,6 +20,10 @@ function PortalService:FindClosestPortal(givenPosition : Vector3?)
 
     for index, model in ipairs(self.Portals:GetChildren()) do
         if not model:IsA("Model") then
+            continue
+        end
+
+        if model.Center.Transparency < 1 then
             continue
         end
 
@@ -43,6 +49,11 @@ function PortalService:OpenClosestPortal(player)
     end
 
     local closestPortal : Model? = self:FindClosestPortal(root.Position)
+    if not closestPortal then
+        warn("No portal can be found.")
+        return
+    end
+
     closestPortal.Center.Transparency = 0
 
     self.BeamOrigin.Parent = root
@@ -60,7 +71,7 @@ end
 ----------------------------------------------
 
 function PortalService:KnitInit()
-
+    CharacterSetupService = Knit.GetService("CharacterSetupService")
 end
 
 function PortalService:KnitStart()
@@ -79,6 +90,8 @@ function PortalService:KnitStart()
         self.BeamOrigin.Parent = nil
         self.BeamDestination.Parent = nil
         self.Prompt.Parent = nil
+
+        CharacterSetupService:LoadNextLevel(player)
     end)
 end
 

@@ -8,10 +8,10 @@ local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
 local Dragon = require(ReplicatedStorage.Source.Modules.Classes.Dragon)
 
--- This FrostDragon class inherits functions from the "Enemy" class
-local FrostDragon = {}
-FrostDragon.__index = FrostDragon
-setmetatable(FrostDragon, Dragon)
+-- This PoisonDragon class inherits functions from the "Enemy" class
+local PoisonDragon = {}
+PoisonDragon.__index = PoisonDragon
+setmetatable(PoisonDragon, Dragon)
 
 ----------------------------------------------
 ---------------- CONSTANTS -------------------
@@ -23,13 +23,13 @@ setmetatable(FrostDragon, Dragon)
 ----------------------------------------------
 
 
-function FrostDragon.new(spawnPosition : Vector3?, level : number?)
-	local frostDragonObject = Dragon.new("Frost Dragon", spawnPosition)
-	setmetatable(frostDragonObject, FrostDragon)
+function PoisonDragon.new(spawnPosition : Vector3?, level : number?)
+	local poisonDragonObject = Dragon.new("Poison Dragon", spawnPosition)
+	setmetatable(poisonDragonObject, PoisonDragon)
 	
-	frostDragonObject.Level = level
+	poisonDragonObject.Level = level
 
-	return frostDragonObject
+	return poisonDragonObject
 end
 
 
@@ -38,14 +38,15 @@ end
 -------------- Public Methods ----------------
 ----------------------------------------------
 
-function FrostDragon:GetFireProjectile()
+
+function PoisonDragon:GetFireProjectile()
     local fireball = Assets.Effects.Fireball:Clone()
     fireball.Parent = workspace.EffectStorage
     fireball.CFrame = self.Mouth.CFrame
 
 	local colorSequence = ColorSequence.new{
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(4, 167, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(163, 223, 255))
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(34, 255, 41)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(204, 255, 220))
 	}
 
 	self:RecolorParticles(fireball, colorSequence)
@@ -54,12 +55,12 @@ function FrostDragon:GetFireProjectile()
 end
 
 
-function FrostDragon:GetFireExplosion()
+function PoisonDragon:GetFireExplosion()
     local explosion = Assets.Effects.FireballPop:Clone()
 
 	local colorSequence = ColorSequence.new{
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(4, 167, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(163, 223, 255))
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(34, 255, 41)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(204, 255, 220))
 	}
 
 	self:RecolorParticles(explosion, colorSequence)
@@ -68,10 +69,26 @@ function FrostDragon:GetFireExplosion()
 end
 
 
-function FrostDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
-    
-end
+function PoisonDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+    local poison = Assets.Effects.Poison:Clone()
+    poison.Parent = root
 
+	local backdrop = Assets.Effects.PoisonBackdrop:Clone()
+    backdrop.Parent = root
+
+    for i = 1, 4 do
+        task.delay(1 * i, function()
+            if humanoid and humanoid.Health > 0 then
+                humanoid:TakeDamage(1)
+            end
+
+            if i == 4 then
+                poison:Destroy()
+				backdrop:Destroy()
+            end
+        end)
+    end
+end
 
 ----------------------------------------------
 -------------- Private Methods ---------------
@@ -82,4 +99,4 @@ end
 
 
 
-return FrostDragon
+return PoisonDragon

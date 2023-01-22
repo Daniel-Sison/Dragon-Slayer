@@ -86,6 +86,9 @@ function LeaderboardService:KnitStart()
     self.Template = {
         ["Coins"] = 0,
         ["Level"] = 1,
+        ["Speed"] = 16,
+        ["MaxHealth"] = 100,
+        ["Strength"] = 5,
     }
 
     self.PlayerStats = {

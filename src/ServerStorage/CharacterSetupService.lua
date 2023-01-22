@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 
@@ -18,17 +19,23 @@ local PortalService
 -------------- Public Methods ----------------
 ----------------------------------------------
 
-function CharacterSetupService:NextLevel()
+function CharacterSetupService:LevelComplete()
     local player = game.Players:FindFirstChildOfClass("Player")
     
     local currentLevel = LeaderboardService:GetData(player, "Level")
     currentLevel += 1
 
     LeaderboardService:SetData(player, "Level", currentLevel)
-    
+
     PortalService:OpenClosestPortal(player)
 end
 
+function CharacterSetupService:LoadNextLevel(player : Player?)
+    local currentLevel = LeaderboardService:GetData(player, "Level")
+
+    self:TeleportPlayer(player, "Level_" .. currentLevel, true)
+    DragonService:SpawnDragons("Level_" .. currentLevel, currentLevel)
+end
 
 function CharacterSetupService.Client:StartPlayer(player : Player?)
     self.Server:TeleportPlayer(player, "Level_1", false)
@@ -37,7 +44,7 @@ end
 
 function CharacterSetupService:LoadToolAndEnemies(player : Player?)
     ToolService:AddToolToPlayer("Wood Stick", player)
-    DragonService:SpawnDragons("Level_1")
+    DragonService:SpawnDragons("Level_1", 1)
 end
 
 function CharacterSetupService:TeleportPlayer(player : Player?, targetLocationName : string?, transition : boolean?)
@@ -49,6 +56,10 @@ function CharacterSetupService:TeleportPlayer(player : Player?, targetLocationNa
     if not root then
         warn("No root in character")
         return
+    end
+
+    if game:GetService("RunService"):IsStudio() then
+        player.Character.Humanoid.WalkSpeed = 50
     end
 
     local teleportLocation : BasePart? = self.StartLocations:FindFirstChild(targetLocationName)
@@ -99,6 +110,26 @@ function CharacterSetupService:KnitStart()
         part.CanQuery = false
         part.Transparency = 1
     end
+
+    -- Create a connections table that will delete connections to prevent memory leaks
+    self.Connections = {}
+
+    Players.PlayerAdded:Connect(function(player : Player?)
+        local characterAddedConnection = player.CharacterAdded:Connect(function(character : Model?)
+            local healthScript : Script? = character:WaitForChild("Health")
+            healthScript.Disabled = true
+        end)
+
+        self.Connections[player] = characterAddedConnection
+    end)
+
+    Players.PlayerRemoving:Connect(function(player : Player?)
+        -- Disconnect the connection if the dictionary key is the player
+        if self.Connections[player] then
+            self.Connections[player]:Disconnect()
+            self.Connections[player] = nil
+        end
+    end)
 end
 
 

@@ -2,11 +2,11 @@ local module = {}
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local GeneralTween = require(ReplicatedStorage.Source.Modules.General.GeneralTween)
 
 ----------- Initiated Variables -----------
 
 local Assets = ReplicatedStorage.Assets
-
 
 function module:BeamLink(part0 : BasePart?, part1 : BasePart?, container : any?)
     local beam = container:FindFirstChild("Beam", true)
@@ -69,6 +69,28 @@ function module:PulseUntilDeath(core : BasePart?, humanoid : Humanoid?, particle
     end)
 end
 
+
+function module:PlayParticleGiven(container : BasePart?, part : BasePart?, special : table?) : BasePart?
+    if not container then
+        warn("No particle given")
+        return
+    end
+
+    container.CanCollide = false
+    container.CanQuery = false
+    container.CanTouch = false
+    container.Massless = true
+    container.Anchored = true
+
+    container.Position = part.Position
+    container.Parent = workspace.EffectStorage
+
+    self:EmitParticles(container, special)
+
+    return container
+end
+
+
 function module:PlayParticle(particleContainerName : string?, part : BasePart?, special : table?) : BasePart?
     local container : BasePart? = Assets.Effects:FindFirstChild(particleContainerName)
     if not container then
@@ -92,6 +114,60 @@ function module:PlayParticle(particleContainerName : string?, part : BasePart?, 
     return container
 end
 
+
+function module:EarthCircleEffect(targetPart : Part?)
+	local rayParams : RaycastParams? = RaycastParams.new()
+	rayParams.FilterDescendantsInstances = {workspace.EffectStorage}
+	rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+	
+	local angle = 0
+	
+	for i = 1, 30 do
+
+		local targetSize = 3
+		local part = Instance.new("Part")
+
+		part.Anchored = true
+		part.Size = Vector3.new(1, 1, 1)
+		part.CFrame = targetPart.CFrame * CFrame.fromEulerAnglesXYZ(0, math.rad(angle), 0) * CFrame.new(10, 5, 0)
+		
+		local raycastResult = workspace:Raycast(part.CFrame.Position, part.CFrame.UpVector * - 10, rayParams)
+		if not raycastResult then
+            continue
+        end
+
+        part.Position = raycastResult.Position + Vector3.new(0, -5, 0)
+        part.Material = Enum.Material.Basalt
+        part.Color = raycastResult.Instance.Color
+        part.Orientation = Vector3.new(math.random(-180,180), math.random(-180,180), math.random(-180,180))
+        part.Parent = game.Workspace.EffectStorage
+
+        GeneralTween:SimpleTween(
+            part,
+            {Position = part.Position + Vector3.new(0, 5, 0), Size = Vector3.new(targetSize, targetSize, targetSize)},
+            0.25,
+            Enum.EasingStyle.Bounce,
+            Enum.EasingDirection.InOut
+        )
+
+        task.delay(4,function()
+            local fadeTween = GeneralTween:SimpleTween(
+                part,
+                {Transparency = 1, Position = part.Position + Vector3.new(0, -5, 0)},
+                1
+            )
+
+            fadeTween.Completed:Connect(function()
+                part:Destroy()
+            end)
+        end)
+		
+
+		angle += 25
+	end
+end
+
+
 function module:EmitInstant(item : any?)
     for _, particle in ipairs(item:GetDescendants()) do
         if not particle:IsA("ParticleEmitter") then
@@ -101,6 +177,7 @@ function module:EmitInstant(item : any?)
         particle:Emit(particle.Rate)
     end
 end
+
 
 function module:EmitParticles(item : any?, special : table?)
     local longestLifetime = 1

@@ -8,10 +8,10 @@ local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
 local Dragon = require(ReplicatedStorage.Source.Modules.Classes.Dragon)
 
--- This FireDragon class inherits functions from the "Enemy" class
-local FireDragon = {}
-FireDragon.__index = FireDragon
-setmetatable(FireDragon, Dragon)
+-- This EarthDragon class inherits functions from the "Enemy" class
+local EarthDragon = {}
+EarthDragon.__index = EarthDragon
+setmetatable(EarthDragon, Dragon)
 
 ----------------------------------------------
 ---------------- CONSTANTS -------------------
@@ -23,25 +23,28 @@ setmetatable(FireDragon, Dragon)
 ----------------------------------------------
 
 
-function FireDragon.new(spawnPosition : Vector3?, level : number?)
-	local fireDragonObject = Dragon.new("Fire Dragon", spawnPosition)
-	setmetatable(fireDragonObject, FireDragon)
+function EarthDragon.new(spawnPosition : Vector3?, level : number?)
+	local earthDragonObject = Dragon.new("Earth Dragon", spawnPosition)
+	setmetatable(earthDragonObject, EarthDragon)
 	
-	fireDragonObject.Level = level
+	earthDragonObject.Level = level
 
-	return fireDragonObject
+	return earthDragonObject
 end
+
 
 
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
 
+function EarthDragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
+	ParticleHandler:EarthCircleEffect(self.HumanoidRootPart)
 
-function Dragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
-    self:Burn(humanoid, root)
+	if (self.HumanoidRootPart.Position - targetRoot.Position).Magnitude < 10 then
+        targetHumanoid:TakeDamage(self.BaseBiteDamage)
+    end
 end
-
 
 
 ----------------------------------------------
@@ -51,4 +54,6 @@ end
 
 
 
-return FireDragon
+
+
+return EarthDragon
