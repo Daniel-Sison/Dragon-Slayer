@@ -87,7 +87,7 @@ function LeaderboardService:KnitStart()
         ["Coins"] = 0,
         ["Level"] = 1,
         ["Speed"] = 16,
-        ["MaxHealth"] = 100,
+        ["Max Health"] = 100,
         ["Strength"] = 5,
     }
 

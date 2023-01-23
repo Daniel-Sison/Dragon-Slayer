@@ -15,6 +15,10 @@ local LeaderboardService
 -------------- Public Methods ----------------
 ----------------------------------------------
 
+function CoinService:ShowChangesInCoinUI(player : Player?)
+    self.Client.UpdateCoinUI:Fire(player, LeaderboardService:GetData(player, "Coins"))
+end
+
 function CoinService:CoinCollected(player : Player?)
     -- Get the current coin amount from the LeaderboardService
     local coinAmount : number? = LeaderboardService:GetData(player, "Coins")

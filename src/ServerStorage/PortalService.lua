@@ -8,6 +8,7 @@ local PortalService = Knit.CreateService {
 
 local Effects = ReplicatedStorage.Assets.Effects
 
+local ShopService
 local CharacterSetupService
 
 ----------------------------------------------
@@ -72,6 +73,7 @@ end
 
 function PortalService:KnitInit()
     CharacterSetupService = Knit.GetService("CharacterSetupService")
+    ShopService = Knit.GetService("ShopService")
 end
 
 function PortalService:KnitStart()
@@ -91,7 +93,7 @@ function PortalService:KnitStart()
         self.BeamDestination.Parent = nil
         self.Prompt.Parent = nil
 
-        CharacterSetupService:LoadNextLevel(player)
+        ShopService:OpenShop(player)
     end)
 end
 
