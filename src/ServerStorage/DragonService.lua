@@ -70,6 +70,8 @@ function DragonService:SpawnDragons(locationName : string?, level : number?)
         end
 
         local dragonObject = self:SelectRandomDragon(part, level)
+        table.insert(self.AllDragons, dragonObject)
+
         self:_linkDragonUI(dragonObject)
     end
 end
@@ -92,6 +94,26 @@ function DragonService:LoadCustomDragons()
 
         blueprintDragon.Parent = Assets.Dragons
     end
+end
+
+
+function DragonService:ResetDragons()
+    self.Resetting = true
+
+    for index, dragon in ipairs(self.AllDragons) do
+        if not dragon then
+            continue
+        end
+
+        dragon:Clean()
+    end
+
+    for index, usedDragon in ipairs(Assets.UsedDragons:GetChildren()) do
+        usedDragon.Parent = Assets.Dragons
+    end
+
+    self.Resetting = false
+    self.AllDragons = {}
 end
 
 ----------------------------------------------
@@ -141,19 +163,22 @@ function DragonService:KnitStart()
     self.StartLocations = workspace:WaitForChild("StartLocations")
     self.DragonContainer = workspace:WaitForChild("DragonContainer")
 
+    self.Resetting = false
+    self.AllDragons = {}
+
     self:LoadCustomDragons()
 
     self.DragonContainer.ChildRemoved:Connect(function()
+        if self.Resetting then
+            return
+        end
+
         if self.DragonContainer:FindFirstChildOfClass("Model") then
             return
         end
 
         CharacterSetupService:LevelComplete()        
     end)
-
-    -- local targetModule = require(Classes:FindFirstChild("LavaDragon"))
-    -- local dragonObject = targetModule.new(nil, 1)
-    -- dragonObject:Start()
 end
 
 

@@ -38,9 +38,6 @@ function InitialLoadController:KnitStart()
     local camera = workspace.CurrentCamera
 
     local initialLoadIn = true
-    if game:GetService("RunService"):IsStudio() then
-        initialLoadIn = false
-    end
 
     player.CharacterAdded:Connect(function(character : Model?)
         if not initialLoadIn then
@@ -48,6 +45,7 @@ function InitialLoadController:KnitStart()
         end
 
         initialLoadIn = false
+
         task.wait(4)
 
         camera.CameraType = Enum.CameraType.Scriptable

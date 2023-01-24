@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local GeneralUI = require(ReplicatedStorage.Source.Modules.General.GeneralUI)
+local StarterGui = game:GetService("StarterGui")
 
 -- Create the service:
 local IntroGuiController = Knit.CreateController {
@@ -56,6 +57,7 @@ end
 
 function IntroGuiController:_runProgram()
     self.Gui.Enabled = true
+    StarterGui:SetCore("ResetButtonCallback", false)
 
     local loadingBarTween : Tween? = self:_animateLoadingBar()
     loadingBarTween.Completed:Wait()
@@ -124,6 +126,7 @@ function IntroGuiController:_transitionToPlayer()
         end
         
         CameraController:ResetCameraToDefault()
+        StarterGui:SetCore("ResetButtonCallback", true)
 
         fadeOut.Completed:Connect(function()
             StatsGuiController:ShowAllUI()
@@ -180,12 +183,15 @@ function IntroGuiController:KnitStart()
         self:FadeInAndOut()
     end)
 
-    if game:GetService("RunService"):IsStudio() then
-        self:_transitionToPlayer()
-    else
-        self:_runProgram()
-    end
+    -- if game:GetService("RunService"):IsStudio() then
+    --     self:_transitionToPlayer()
+    -- else
+    self:_runProgram()
+    -- end
 end
+
+--You died. Click the button if you want to try again.
+--YOU WIN! Great job. You defeated all the levels.
 
 
 return IntroGuiController

@@ -65,6 +65,17 @@ function EnemyHealthBarController:_linkDragonToOpenSlot(humanoid : Humanoid?, ro
     local connection1
     local connection2
     local connection3
+    local connection4
+
+    local function resetConnections()
+        connection1:Disconnect()
+        connection2:Disconnect()
+        connection3:Disconnect()
+        connection4:Disconnect()
+
+        slot:SetAttribute("Occupied", false)
+        slot.Visible = false
+    end
 
     connection1 = humanoid:GetPropertyChangedSignal("Health"):Connect(function()
         self:UpdateFill(slot, humanoid.Health, humanoid.MaxHealth)
@@ -82,13 +93,16 @@ function EnemyHealthBarController:_linkDragonToOpenSlot(humanoid : Humanoid?, ro
         end
     end)
 
-    connection3 = humanoid.Died:Connect(function()
-        connection1:Disconnect()
-        connection2:Disconnect()
-        connection3:Disconnect()
+    connection3 = humanoid.Parent.AncestryChanged:Connect(function()
+        if humanoid:IsDescendantOf(workspace) then
+            return
+        end
+        
+        resetConnections()
+    end)
 
-        slot:SetAttribute("Occupied", false)
-        slot.Visible = false
+    connection4 = humanoid.Died:Connect(function()
+        resetConnections()
     end)
 end
 

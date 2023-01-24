@@ -63,6 +63,21 @@ function PortalService:OpenClosestPortal(player)
     self.Prompt.Parent = closestPortal.Center
 end
 
+
+function PortalService:ResetPortals()
+    for index, model in ipairs(self.Portals:GetChildren()) do
+        if not model:IsA("Model") then
+            continue
+        end
+
+        model.Center.Transparency = 1
+    end
+
+    self.BeamOrigin.Parent = nil
+    self.BeamDestination.Parent = nil
+    self.Prompt.Parent = nil                             
+end
+
 ----------------------------------------------
 -------------- Private Methods ---------------
 ----------------------------------------------
@@ -89,11 +104,16 @@ function PortalService:KnitStart()
     self.Prompt.MaxActivationDistance = 10
 
     self.Prompt.Triggered:Connect(function(player : Player?)
+        local nextPortal = self:FindClosestPortal(self.Prompt.Parent.Position)
+        if nextPortal then
+            ShopService:OpenShop(player)
+        else
+            CharacterSetupService:PlayerWin(player)
+        end
+
         self.BeamOrigin.Parent = nil
         self.BeamDestination.Parent = nil
         self.Prompt.Parent = nil
-
-        ShopService:OpenShop(player)
     end)
 end
 

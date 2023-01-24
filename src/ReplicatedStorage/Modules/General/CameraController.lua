@@ -1,5 +1,6 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local GeneralTween = require(ReplicatedStorage.Source.Modules.General.GeneralTween)
 
 local CameraController = Knit.CreateController {
     Name = "CameraController",
@@ -29,14 +30,30 @@ end
 
 -- Snappy way to toggle blur in and out
 function CameraController:ToggleBlur(value, size)
+	local targetSize = 25
 	if size then
-		blur.Size = size
+		targetSize = size
 	end
 	
 	if value then
+		blur.Size = 0
 		blur.Parent = Lighting
+		
+		GeneralTween:SimpleTween(
+			blur,
+			{Size = targetSize},
+			0.35
+		)
 	else
-		blur.Parent = nil
+		local tween = GeneralTween:SimpleTween(
+			blur,
+			{Size = 0},
+			0.35
+		)
+		
+		tween.Completed:Connect(function()
+			blur.Parent = nil
+		end)
 	end
 end
 

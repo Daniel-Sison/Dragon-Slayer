@@ -1,4 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local GeneralUI = require(ReplicatedStorage.Source.Modules.General.GeneralUI)
 
@@ -12,6 +13,8 @@ local player = game.Players.LocalPlayer
 local ShopService
 local LeaderboardService
 
+local CameraController
+
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
@@ -20,10 +23,13 @@ function ShopGuiController:OpenShop()
     self.Gui.Enabled = true
     self.Container.Position = self.Container:GetAttribute("HiddenPosition")
 
+    CameraController:ToggleBlur(true)
+    StarterGui:SetCore("ResetButtonCallback", false)
+
     GeneralUI:SimpleTween(
         self.Container,
         {Position = self.Container:GetAttribute("OriginPosition")},
-        1,
+        0.35,
         Enum.EasingStyle.Quad,
         Enum.EasingDirection.Out
     )
@@ -31,10 +37,13 @@ end
 
 
 function ShopGuiController:HideShop()
+    CameraController:ToggleBlur(false)
+    StarterGui:SetCore("ResetButtonCallback", true)
+
     GeneralUI:SimpleTween(
         self.Container,
         {Position = self.Container:GetAttribute("HiddenPosition")},
-        1,
+        0.35,
         Enum.EasingStyle.Quad,
         Enum.EasingDirection.In
     )
@@ -69,6 +78,8 @@ end
 function ShopGuiController:KnitInit()
     ShopService = Knit.GetService("ShopService")
     LeaderboardService = Knit.GetService("LeaderboardService")
+
+    CameraController = Knit.GetController("CameraController")
 end
 
 function ShopGuiController:KnitStart()

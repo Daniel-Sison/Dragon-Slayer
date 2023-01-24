@@ -25,7 +25,30 @@ local ToolService = Knit.CreateService {
     Name = "ToolService",
 }
 
-local BASE_SWORD_DAMAGE = 50
+
+----------------------------------------------
+----------------- CONSTANTS ------------------
+----------------------------------------------
+
+
+local LeaderboardService
+
+local BASE_SWORD_DAMAGE = {
+    ["Wood Stick"] = 10,
+
+    ["Dull Sword"] = 12,
+    ["Silver Sword"] = 14,
+    ["Gold Sword"] = 16,
+
+    ["Emerald Sword"] = 19,
+    ["Sapphire Sword"] = 21,
+    ["Violet Sword"] = 24,
+
+    ["Blood Sword"] = 28,
+    ["Sword of Darkness"] = 33,
+    ["Sword of Starlight"] = 38,
+}
+
 
 local SWORD_ANIMATION_CYCLE = {
     ["SlashAnim"] = "StabAnim",
@@ -114,6 +137,12 @@ function ToolService:UseToolAction(player : Player?, tool : Tool?)
         return
     end
 
+    local playerStrength = LeaderboardService:GetData(player, "Strength")
+    if not playerStrength then
+        warn("Could not find Strength data of the player, ", player.Name)
+        return
+    end
+
     -- If humanoid is dead then return
     if humanoid.Health <= 0 then
         return
@@ -140,7 +169,7 @@ function ToolService:UseToolAction(player : Player?, tool : Tool?)
 
     -- Play the animation, return all targets hit during animation
     local targetList : table? = self:_attackAnimation(animator, character, tool)
-    self:_dealDamageToTargetList(targetList)
+    self:_dealDamageToTargetList(targetList, tool, playerStrength)
 
     -- When the animation ends, do the following
     tool:SetAttribute("Debounce", false)
@@ -167,7 +196,7 @@ function ToolService:_playAttackSound(tool : Tool?)
 end
 
 -- Given a target list, deal damage to each one
-function ToolService:_dealDamageToTargetList(targetList : table?)
+function ToolService:_dealDamageToTargetList(targetList : table?, tool : Tool?, playerStrength : number?)
     for index, model in ipairs(targetList) do
         -- If the model doesn't have a humanoid, filter it
         local humanoid : Humanoid = model:FindFirstChildOfClass("Humanoid")
@@ -180,7 +209,8 @@ function ToolService:_dealDamageToTargetList(targetList : table?)
             continue
         end
 
-        humanoid:TakeDamage(BASE_SWORD_DAMAGE)
+        local totalDamage = BASE_SWORD_DAMAGE[tool.Name] + playerStrength
+        humanoid:TakeDamage(totalDamage)
     end
 end
 
@@ -300,7 +330,7 @@ end
 ----------------------------------------------
 
 function ToolService:KnitInit()
-
+    LeaderboardService = Knit.GetService("LeaderboardService")
 end
 
 function ToolService:KnitStart()

@@ -76,7 +76,7 @@ function ElectricDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePar
 
     humanoid.PlatformStand = true
 
-    local duration = 2.5
+    local duration = 1.5
     local pulseAmount = 5
 
     for i = 1, pulseAmount do

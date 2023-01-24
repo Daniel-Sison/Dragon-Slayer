@@ -77,6 +77,12 @@ end
 
 
 
+function LavaDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+    return
+end
+
+
+
 ----------------------------------------------
 -------------- Private Methods ---------------
 ----------------------------------------------

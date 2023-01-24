@@ -88,7 +88,7 @@ function ShadowDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?
 		0.5
 	)
 
-	fadeIn.Completed:Connect(function(playbackState)
+	fadeIn.Completed:Connect(function()
 		task.delay(1, function()
 			local fadeOut = GeneralTween:SimpleTween(
 				blindness.Frame,

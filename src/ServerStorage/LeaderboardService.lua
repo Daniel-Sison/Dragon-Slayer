@@ -27,6 +27,8 @@ local DataVersion = DataStoreService:GetDataStore("V_1.0")
 
 local TableUtil = require(ReplicatedStorage.Util:FindFirstChild("table-util", true))
 
+local CoinService
+
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
@@ -70,6 +72,12 @@ function LeaderboardService:SetData(player : Player?, dataName : string?, newDat
     self.PlayerStats[player.UserId][dataName] = newData
 end
 
+function LeaderboardService:ResetPlayerStats(player : Player?)
+    self.PlayerStats[player.UserId] = TableUtil.Copy(self.Template, true)
+
+    CoinService:ShowChangesInCoinUI(player)
+end
+
 ----------------------------------------------
 -------------- Private Methods ---------------
 ----------------------------------------------
@@ -79,7 +87,7 @@ end
 ----------------------------------------------
 
 function LeaderboardService:KnitInit()
-
+    CoinService = Knit.GetService("CoinService")
 end
 
 function LeaderboardService:KnitStart()

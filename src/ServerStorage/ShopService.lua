@@ -17,22 +17,22 @@ local CoinService
 local SHOP_ITEMS = {
     ["Heal"] = {
         Description = "Heal back the amount provided.",
-        BaseCost = 10,
+        BaseCost = 3,
         BaseAmount = 20,
     },
     ["Strength"] = {
         Description = "Increase damage per hit.",
-        BaseCost = 10,
-        BaseAmount = 10,
+        BaseCost = 5,
+        BaseAmount = 2,
     },
     ["Speed"] = {
         Description = "Increase movement speed.",
-        BaseCost = 10,
-        BaseAmount = 5,
+        BaseCost = 5,
+        BaseAmount = 3,
     },
     ["Max Health"] = {
         Description = "Increase maximum health.",
-        BaseCost = 10,
+        BaseCost = 5,
         BaseAmount = 10,
     },
 }
@@ -115,7 +115,8 @@ function ShopService:BuyItem(player : Player?, itemName : string?)
         local currentData = LeaderboardService:GetData(player, dataName)
         local newData = currentData + self.CurrentShopItems[itemName].Amount
 
-        LeaderboardService:SetData(player, dataName, newData)   
+        LeaderboardService:SetData(player, dataName, newData)
+        CharacterSetupService:UpdateStatsOnPlayer(player, dataName)
     end
 
     print(LeaderboardService.PlayerStats[player.UserId])

@@ -33,7 +33,6 @@ function EarthDragon.new(spawnPosition : Vector3?, level : number?)
 end
 
 
-
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
@@ -44,6 +43,11 @@ function EarthDragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
 	if (self.HumanoidRootPart.Position - targetRoot.Position).Magnitude < 10 then
         targetHumanoid:TakeDamage(self.BaseBiteDamage)
     end
+end
+
+
+function EarthDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+    return
 end
 
 

@@ -7,6 +7,7 @@ local CharacterSetupService = Knit.CreateService {
     Name = "CharacterSetupService",
     Client = {
         FadeTransition = Knit.CreateSignal(), -- Create the signal
+        GameEndedForPlayer = Knit.CreateSignal(),
     },
 }
 
@@ -18,6 +19,25 @@ local PortalService
 ----------------------------------------------
 -------------- Public Methods ----------------
 ----------------------------------------------
+
+function CharacterSetupService:UpdateStatsOnPlayer(player, dataName)
+    if not player.Character then
+        return
+    end
+
+    local humanoid : Humanoid? = player.Character:FindFirstChild("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    local currentData = LeaderboardService:GetData(player, dataName)
+
+    if dataName == "Speed" then
+        humanoid.WalkSpeed = currentData
+    elseif dataName == "Max Health" then
+        humanoid.MaxHealth = currentData
+    end
+end
 
 function CharacterSetupService:LevelComplete()
     local player = game.Players:FindFirstChildOfClass("Player")
@@ -38,13 +58,15 @@ function CharacterSetupService:LoadNextLevel(player : Player?)
 end
 
 function CharacterSetupService.Client:StartPlayer(player : Player?)
-    self.Server:TeleportPlayer(player, "Level_1", false)
     self.Server:LoadToolAndEnemies(player)
 end
 
 function CharacterSetupService:LoadToolAndEnemies(player : Player?)
     ToolService:AddToolToPlayer("Wood Stick", player)
-    DragonService:SpawnDragons("Level_1", 1)
+
+    task.delay(1, function()
+        DragonService:SpawnDragons("Level_1", 1)
+    end)
 end
 
 function CharacterSetupService:TeleportPlayer(player : Player?, targetLocationName : string?, transition : boolean?)
@@ -56,10 +78,6 @@ function CharacterSetupService:TeleportPlayer(player : Player?, targetLocationNa
     if not root then
         warn("No root in character")
         return
-    end
-
-    if game:GetService("RunService"):IsStudio() then
-        player.Character.Humanoid.WalkSpeed = 50
     end
 
     local teleportLocation : BasePart? = self.StartLocations:FindFirstChild(targetLocationName)
@@ -79,10 +97,62 @@ function CharacterSetupService:TeleportPlayer(player : Player?, targetLocationNa
 end
 
 
+function CharacterSetupService:ResetPlayer(player : Player?)
+    task.delay(2, function()
+        self.Client.GameEndedForPlayer:Fire(player, false)
+
+        LeaderboardService:ResetPlayerStats(player)
+        DragonService:ResetDragons()
+        PortalService:ResetPortals()
+        workspace.EffectStorage:ClearAllChildren()
+    end)
+end
+
+
+function CharacterSetupService:PlayerWin(player : Player?)
+    self.Client.GameEndedForPlayer:Fire(player, true)
+    self.PlayerWon = true
+
+    task.delay(2, function()
+        LeaderboardService:ResetPlayerStats(player)
+        DragonService:ResetDragons()
+        PortalService:ResetPortals()
+        workspace.EffectStorage:ClearAllChildren()
+
+        self.PlayerWon = false
+    end)
+
+    if not player.Character then
+        return
+    end
+
+    local humanoid : Humanoid? = player.Character:FindFirstChild("Humanoid")
+    if not humanoid then
+        return
+    end
+
+    humanoid.Health = 0
+end
+
+
 
 ----------------------------------------------
 -------------- Private Methods ---------------
 ----------------------------------------------
+
+function CharacterSetupService:_setupStartLocations()
+    for _, part in ipairs(self.StartLocations:GetDescendants()) do
+        if not part:IsA("BasePart") then
+            continue
+        end
+
+        part.Anchored = true
+        part.CanCollide = false
+        part.CanTouch = false
+        part.CanQuery = false
+        part.Transparency = 1
+    end
+end
 
 
 ----------------------------------------------
@@ -98,26 +168,30 @@ end
 
 function CharacterSetupService:KnitStart()
     self.StartLocations = workspace:WaitForChild("StartLocations")
-
-    for _, part in ipairs(self.StartLocations:GetDescendants()) do
-        if not part:IsA("BasePart") then
-            continue
-        end
-
-        part.Anchored = true
-        part.CanCollide = false
-        part.CanTouch = false
-        part.CanQuery = false
-        part.Transparency = 1
-    end
+    self:_setupStartLocations()
 
     -- Create a connections table that will delete connections to prevent memory leaks
     self.Connections = {}
+
+    self.PlayerWon = false
 
     Players.PlayerAdded:Connect(function(player : Player?)
         local characterAddedConnection = player.CharacterAdded:Connect(function(character : Model?)
             local healthScript : Script? = character:WaitForChild("Health")
             healthScript.Disabled = true
+
+            local humanoid : Humanoid? = character:WaitForChild("Humanoid")
+            humanoid.Died:Connect(function()
+                if self.PlayerWon then
+                    return
+                end
+
+                self:ResetPlayer(player)
+            end)
+
+            task.delay(0.1, function()
+                self:TeleportPlayer(player, "Level_1", false)
+            end)
         end)
 
         self.Connections[player] = characterAddedConnection

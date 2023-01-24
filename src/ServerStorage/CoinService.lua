@@ -32,6 +32,7 @@ function CoinService:CoinCollected(player : Player?)
 end
 
 
+
 -- Spawn a collection of coins with a specified amount
 function CoinService:SpawnCoinsAt(position : Vector3?, amount : number?)
     -- Table to hold all the coins
@@ -39,9 +40,13 @@ function CoinService:SpawnCoinsAt(position : Vector3?, amount : number?)
 
     -- Spawn the coins
     for i = 1, amount do
-        local coin = ReplicatedStorage.Assets.Misc.Coin:Clone()
+        local coin : BasePart? = ReplicatedStorage.Assets.Misc.Coin:Clone()
         coin.Position = position
         coin.Parent = workspace.EffectStorage
+
+        local popSound : Sound? = ReplicatedStorage.Assets.Sounds.PopSound:Clone()
+        popSound.Parent = coin
+        popSound:Play()
 
         table.insert(allCoins, coin)
 

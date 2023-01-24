@@ -69,7 +69,7 @@ end
 
 
 function FrostDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
-    
+    return
 end
 
 

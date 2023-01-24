@@ -119,6 +119,13 @@ end
 
 -- Primary method to clean up the object
 function Dragon:Clean()
+    if not self.Body then
+        self = nil
+        return
+    end
+
+    self:_stopAnimations()
+
     -- Destroy the body
     self.Body:Destroy()
 
@@ -331,6 +338,14 @@ function Dragon:_setupHumanoidConnections()
 
         deathConnection:Disconnect()
         deathConnection = nil
+
+        local deathSound : Sound? = Assets.Sounds.DragonRoar:Clone()
+        deathSound.Parent = self.HumanoidRootPart
+        deathSound.PlayOnRemove = true
+
+        task.delay(0.1, function()
+            deathSound:Destroy()
+        end)
 
         -- Coin drop
         Knit.GetService("CoinService"):SpawnCoinsAt(
@@ -552,9 +567,11 @@ function Dragon:_playAnimation(animationName : string?, override : boolean?)
     self.CurrentAnimation.AnimationId = ANIMATION_LIST[animationName]
 
     -- Load it into a track
-    self.CurrentAnimationTrack = self.Animator:LoadAnimation(self.CurrentAnimation)
-    self.CurrentAnimationTrack:Play(0.5)
-
+    pcall(function()
+        self.CurrentAnimationTrack = self.Animator:LoadAnimation(self.CurrentAnimation)
+        self.CurrentAnimationTrack:Play(0.5)
+    end)
+    
     -- Return animation in case you want to detect when it ended or if its on a certain frame
     return self.CurrentAnimationTrack
 end
