@@ -2,7 +2,19 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local GeneralUI = require(ReplicatedStorage.Source.Modules.General.GeneralUI)
 
--- Create the service:
+--[[
+
+Usage:
+
+Public Methods:
+    - StatsGuiController:UpdateCoins(newCoinAmount : number?)
+        - Update the coins
+
+    - StatsGuiController:ShowAllUI()
+        - Reveal all stats
+
+]]
+
 local StatsGuiController = Knit.CreateController {
     Name = "StatsGuiController",
 }
@@ -15,6 +27,8 @@ local CoinService
 -------------- Public Methods ----------------
 ----------------------------------------------
 
+
+-- Update the coins
 function StatsGuiController:UpdateCoins(newCoinAmount : number?)
     self.CoinTextHolder.Text = tostring(newCoinAmount)
 end

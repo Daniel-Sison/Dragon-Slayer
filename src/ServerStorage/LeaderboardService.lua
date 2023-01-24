@@ -33,42 +33,48 @@ local CoinService
 -------------- Public Methods ----------------
 ----------------------------------------------
 
--- Client is able to get data
+-- Client is able to read data
 function LeaderboardService.Client:GetData(player : Player?, dataName : string?)
     return self.Server:GetData(player, dataName)
 end
 
 
 function LeaderboardService:GetData(player : Player?, dataName : string?)
+    -- Find the entry of the correct player
     local entry : string? = self.PlayerStats[player.UserId]
     if not entry then
         warn("No player of that name has data")
         return nil
     end
 
+    -- Find the correct data from the entry
     local targetData : string? = entry[dataName]
     if not targetData then
         warn("No data of that name")
         return nil
     end
 
+    -- Return the data
     return targetData
 end
 
 -- Only a server function for setting data
 function LeaderboardService:SetData(player : Player?, dataName : string?, newData : any?)
+    -- Find the entry of the correct player
     local entry : string? = self.PlayerStats[player.UserId]
     if not entry then
         warn("No player of that name has data")
         return nil
     end
 
+    -- Find the correct data from the entry
     local targetData : string? = entry[dataName]
     if not targetData then
         warn("No data of that name")
         return nil
     end
 
+    -- Update the data
     self.PlayerStats[player.UserId][dataName] = newData
 end
 

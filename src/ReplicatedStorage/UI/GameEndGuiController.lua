@@ -3,7 +3,21 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local GeneralUI = require(ReplicatedStorage.Source.Modules.General.GeneralUI)
 local StarterGui = game:GetService("StarterGui")
 
--- Create the service:
+
+--[[
+
+Usage:
+
+Public Methods:
+    - GameEndGuiController:GameEnded(playerWon : boolean?)
+        - Runs when the game has ended
+        - Reveals the "Play Again" button
+
+    - GameEndGuiController:Hide()
+        - Hide the game ended UI
+]]
+
+
 local GameEndGuiController = Knit.CreateController {
     Name = "GameEndGuiController",
 }
@@ -20,9 +34,12 @@ local CharacterSetupService
 -------------- Public Methods ----------------
 ----------------------------------------------
 
+
 function GameEndGuiController:GameEnded(playerWon : boolean?)
+    -- Disable resetting while this screen is active
     StarterGui:SetCore("ResetButtonCallback", false)
 
+    -- Configure message based on wether player won or lost
     local delayTime = 0
     if playerWon then
         self.Description.Text = "YOU WIN! Great job. You defeated all the levels."
@@ -31,13 +48,12 @@ function GameEndGuiController:GameEnded(playerWon : boolean?)
         self.Description.Text = "You died. Click the button if you want to try again."
     end
 
+    -- Hide the play button while game is resetting
     self.PlayButton.Visible = false
     self.PlayButton.Position = self.PlayButton:GetAttribute("HiddenPosition")
 
     self.Container.Size = UDim2.new(0, 0, 0, 0)
     self.Gui.Enabled = true
-
-    
 
     local reveal : Tween? = GeneralUI:SimpleTween(
         self.Container,
@@ -45,10 +61,15 @@ function GameEndGuiController:GameEnded(playerWon : boolean?)
         0.15
     )
 
+    -- When the UI is revealed
     reveal.Completed:Connect(function()
+
+        -- Make the play button visible
         self.PlayButton.Visible = true
+
+        -- then animate it in
         task.delay(delayTime, function()
-                GeneralUI:SimpleTween(
+            GeneralUI:SimpleTween(
                 self.PlayButton,
                 {Position = self.PlayButton:GetAttribute("OriginPosition")},
                 1
@@ -57,8 +78,10 @@ function GameEndGuiController:GameEnded(playerWon : boolean?)
     end)
 end
 
-
+-- Hide the entire UI
 function GameEndGuiController:Hide()
+
+    -- Allow player to reset
     StarterGui:SetCore("ResetButtonCallback", true)
 
     local hideTween : Tween? = GeneralUI:SimpleTween(
@@ -97,6 +120,8 @@ function GameEndGuiController:KnitStart()
     self.Description = self.Container:WaitForChild("Description")
     self.PlayButton = self.Container:WaitForChild("PlayButton")
 
+    -- Configure UI elements so that the attributes "OriginPosition" and "HiddenPosition"
+    -- can be used
     GeneralUI:Configure(self.Container)
     GeneralUI:Configure(self.PlayButton, self.PlayButton.Position + UDim2.new(0, 0, 1, 0))
 
@@ -112,10 +137,13 @@ function GameEndGuiController:KnitStart()
 
         debounce = false
 
-        local hide = self:Hide()
+        local hide : Tween? = self:Hide()
 
+        -- When hide tween has completed
         hide.Completed:Connect(function()
             self.Gui.Enabled = false
+
+            -- Start the player on the Server
             CharacterSetupService:StartPlayer()
             debounce = true
         end)

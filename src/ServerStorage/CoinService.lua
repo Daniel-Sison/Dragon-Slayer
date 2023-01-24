@@ -2,6 +2,25 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local GeneralTween = require(ReplicatedStorage.Source.Modules.General.GeneralTween)
 
+--[[
+
+Usage:
+
+Public Methods:
+    - CoinService:ShowChangesInCoinUI(player : Player?)
+        - If the coin amount changes, then reflect that in the UI
+
+    - CoinService:CoinCollected(player : Player?)
+        - If a coin is collected by the player, then
+        - update their total amount and show the changes in the UI
+    
+    - CoinService:SpawnCoinsAt(position : Vector3?, amount : number?)
+        - Spawn coins at a position with provided amount
+        - Called whenever a dragon is killed
+
+]]
+
+
 local CoinService = Knit.CreateService {
     Name = "CoinService",
     Client = {
@@ -19,6 +38,7 @@ function CoinService:ShowChangesInCoinUI(player : Player?)
     self.Client.UpdateCoinUI:Fire(player, LeaderboardService:GetData(player, "Coins"))
 end
 
+
 function CoinService:CoinCollected(player : Player?)
     -- Get the current coin amount from the LeaderboardService
     local coinAmount : number? = LeaderboardService:GetData(player, "Coins")
@@ -30,7 +50,6 @@ function CoinService:CoinCollected(player : Player?)
     -- Reflect that change in the UI
     self.Client.UpdateCoinUI:Fire(player, coinAmount)
 end
-
 
 
 -- Spawn a collection of coins with a specified amount
@@ -89,10 +108,13 @@ end
 -- Run through each coin and check if it has been collected yet
 function CoinService:_checkIfCoinCollected(allCoins : table?)
     for _, coin in ipairs(allCoins) do
+
+        -- Use "Collected" attribute as a debounce tool
         if coin:GetAttribute("Collected") then
             continue
         end
 
+        -- Search for the closest player root
         local closestPlayerRoot : BasePart? = self:_findClosestPlayerRoot(coin)
         if not closestPlayerRoot then
             continue
@@ -100,9 +122,7 @@ function CoinService:_checkIfCoinCollected(allCoins : table?)
 
         coin:SetAttribute("Collected", true)
 
-        --coin.Anchored = true
-        --coin.CanCollide = false
-
+        -- Animation to make the coin small
         local collectTween = GeneralTween:SimpleTween(
             coin,
             {Size = Vector3.new(0.01, 0.01, 0.01)},
@@ -112,11 +132,13 @@ function CoinService:_checkIfCoinCollected(allCoins : table?)
         )
 
         collectTween.Completed:Connect(function()
+            -- Get the player based on the closest Player root
             local player = game.Players:GetPlayerFromCharacter(closestPlayerRoot.Parent)
             if not player then 
                 return 
             end
 
+            -- Call the CoinCollected function
             self:CoinCollected(player)
 
             coin:Destroy()
@@ -170,10 +192,11 @@ function CoinService:KnitInit()
 end
 
 function CoinService:KnitStart()
-
+    -- Create a model coin
     self.CoinIdeal = workspace.Props:WaitForChild("CoinIdeal")
-    self:_spinCoinIdeal()
 
+    -- All coins will try to match the orientation of CoinIdeal
+    self:_spinCoinIdeal()
 end
 
 

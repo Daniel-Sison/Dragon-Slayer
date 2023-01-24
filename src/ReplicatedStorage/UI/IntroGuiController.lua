@@ -3,7 +3,17 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local GeneralUI = require(ReplicatedStorage.Source.Modules.General.GeneralUI)
 local StarterGui = game:GetService("StarterGui")
 
--- Create the service:
+
+--[[
+
+Usage:
+
+Public Methods:
+    - IntroGuiController:FadeInAndOut()
+        - Runs the fade in-out effect
+        - Currently only being called during teleportation of the player
+]]
+
 local IntroGuiController = Knit.CreateController {
     Name = "IntroGuiController",
 }
@@ -21,13 +31,18 @@ local CharacterSetupService
 ----------------------------------------------
 
 function IntroGuiController:FadeInAndOut()
+
+    -- Fade the dark background in
     local fadeIn : Tween? = GeneralUI:SimpleTween(
         self.Container,
         {BackgroundTransparency = 0},
         0.5
     )
 
+    -- When previous tween has been completed, then fade out
     fadeIn.Completed:Connect(function()
+
+        -- Use task.delay instead of task.wait to prevent yield
         task.delay(0.5, function()
 
             GeneralUI:SimpleTween(
@@ -45,6 +60,7 @@ end
 -------------- Private Methods ---------------
 ----------------------------------------------
 
+
 function IntroGuiController:_animateLoadingBar()
     self.LoadingBar.Size = UDim2.new(0, 0, self.LoadingBar.Size.Y, 0)
 
@@ -55,12 +71,16 @@ function IntroGuiController:_animateLoadingBar()
     )
 end
 
+
+-- Called at the start of the game, runs the loading bar and sets up the GUI
 function IntroGuiController:_runProgram()
     self.Gui.Enabled = true
     StarterGui:SetCore("ResetButtonCallback", false)
 
     local loadingBarTween : Tween? = self:_animateLoadingBar()
     loadingBarTween.Completed:Wait()
+
+    -- Animate various UI elements after loadingbar has completed
 
     for _, item in ipairs(self.LoadingItems:GetChildren()) do
         GeneralUI:SimpleTween(
@@ -84,13 +104,17 @@ function IntroGuiController:_runProgram()
         2
     )
 
+    -- Simple camera effect
     self.IntroCamTween = CameraController:CameraToPart(self.CameraPositions.StartCam2, 30)
 end
 
-
+-- When the play button has been clicked
 function IntroGuiController:_transitionToPlayer()
+
+    -- Disable the blur
     CameraController:ToggleBlur(false)
 
+    -- Animate UI elements out
     GeneralUI:SimpleTween(
         self.GameTitle,
         {Position = self.GameTitle.Position - UDim2.new(0, 0, 1, 0)},
@@ -120,14 +144,18 @@ function IntroGuiController:_transitionToPlayer()
             0.5
         )
 
+        -- Cancel the IntroCamTween if it's still running
         if self.IntroCamTween then
             self.IntroCamTween:Cancel()
             self.IntroCamTween = nil
         end
         
+        -- Reset the camera, enable resetting
         CameraController:ResetCameraToDefault()
         StarterGui:SetCore("ResetButtonCallback", true)
 
+        -- When all animations have completed, then
+        -- show the stats and activate IntroFinished()
         fadeOut.Completed:Connect(function()
             StatsGuiController:ShowAllUI()
             InitialLoadController:IntroFinished()
@@ -159,6 +187,7 @@ function IntroGuiController:KnitStart()
     self.LoadingItems = self.Container:WaitForChild("LoadingItems")
 
     for index, item in ipairs(self.LoadingItems:GetChildren()) do
+       -- Sets the second argument as the element's attribute as "HiddenPosition"
         GeneralUI:Configure(item, item.Position + UDim2.new(0, 0, 1, 0))
     end
 
@@ -183,15 +212,10 @@ function IntroGuiController:KnitStart()
         self:FadeInAndOut()
     end)
 
-    -- if game:GetService("RunService"):IsStudio() then
-    --     self:_transitionToPlayer()
-    -- else
+
     self:_runProgram()
-    -- end
 end
 
---You died. Click the button if you want to try again.
---YOU WIN! Great job. You defeated all the levels.
 
 
 return IntroGuiController

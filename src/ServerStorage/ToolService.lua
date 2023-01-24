@@ -33,6 +33,7 @@ local ToolService = Knit.CreateService {
 
 local LeaderboardService
 
+-- Set the damage values for each sword
 local BASE_SWORD_DAMAGE = {
     ["Wood Stick"] = 10,
 
@@ -60,15 +61,20 @@ local SWORD_ANIMATION_CYCLE = {
 -------------- Public Methods ----------------
 ----------------------------------------------
 
+-- Adds a specified tool to a player's backpack
 function ToolService:AddToolToPlayer(toolName : string?, player : Player?)
+    
+    -- If the specified target tool is not there, then return a warning.
     local targetWeapon = ReplicatedStorage.Assets.Weapons:FindFirstChild(toolName, true)
     if not targetWeapon then
         warn("Weapon of the name " .. toolName .. " cannot be found in weapons folder.")
     end
 
+    -- Copy the weapon into the backpack
     targetWeapon = targetWeapon:Clone()
     targetWeapon.Parent = player.Backpack
 
+    -- Configure the tool so that when equipped, it works
     self:ConfigureTool(targetWeapon, player)
 end
 
@@ -93,6 +99,7 @@ function ToolService:ConfigureTool(tool : Tool?, player : Player?)
 
     table.insert(toolConnections, equipConnection)
 
+    -- Disconnect the activation connections when unequipped
     local unequipConnection = tool.Unequipped:Connect(function()
         activationConnection:Disconnect()
         activationConnection = nil
@@ -109,6 +116,8 @@ function ToolService:ConfigureTool(tool : Tool?, player : Player?)
         self:_clearConnectionsTable(toolConnections)
     end)
 
+    -- If there's no character then just return
+    -- Will probably throw an error anyways if there isn't a character
     if not player.Character then
         return
     end
@@ -122,7 +131,7 @@ function ToolService:ConfigureTool(tool : Tool?, player : Player?)
 end
 
 
-
+-- This function is activated when the tool is activated on click/tap
 function ToolService:UseToolAction(player : Player?, tool : Tool?)
     local character = tool.Parent
 
@@ -153,7 +162,7 @@ function ToolService:UseToolAction(player : Player?, tool : Tool?)
         return
     end
 
-    
+    -- Create a debounce for the tool
     if tool:GetAttribute("Debounce") then
         return
     end

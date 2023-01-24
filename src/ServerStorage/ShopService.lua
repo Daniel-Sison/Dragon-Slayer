@@ -2,7 +2,26 @@ local ContextActionService = game:GetService("ContextActionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
--- Create the service:
+--[[
+
+Usage:
+
+Public Methods:
+    - ShopService:FinishedBuying(player : Player?)
+        - When a player is finished buying from the shop
+        - This function calls the "Load into next stage" function from CharacterSetupService
+
+    - ShopService:OpenShop(player : Player?)
+        - Generates random shop items
+        - Opens the shop for the player
+
+    - ShopService:BuyItem(player : Player?, itemName : string?)
+        - When the player requests to buy an item from the client
+        - Will check if player has enough money to buy on the server and the client
+        - Buying will only occur on the server
+
+]]
+
 local ShopService = Knit.CreateService {
     Name = "ShopService",
     Client = {
@@ -58,29 +77,36 @@ function ShopService:FinishedBuying(player : Player?)
     end
 
     self.ShopOpen = false
+
+    -- Load the next level
     CharacterSetupService:LoadNextLevel(player)
 end
 
 function ShopService:OpenShop(player : Player?)
-    local shopItems = self:_generateAllShopItems()
+    -- Generate a table of random items that can be purchased by the player
+    local shopItems : table? = self:_generateAllShopItems()
 
+    -- Make shopitems visible for the entire script
     self.CurrentShopItems = shopItems
     self.ShopOpen = true
+
+    -- Call the client to open the Shop UI
     self.Client.OpenShopUISignal:Fire(player, shopItems)
 end
 
 function ShopService:BuyItem(player : Player?, itemName : string?)
-
+    -- If the requested item doesn't exist, just return
     if not self.CurrentShopItems[itemName] then
         return
     end
 
+    -- If the item has already been bought, then return
     if self.CurrentShopItems[itemName].Bought == true then
         warn("This item has already been bought.")
         return
     end
 
-
+    -- Get the coin amount from the player stats
     local coinAmount : number? = LeaderboardService:GetData(player, "Coins")
 
     -- If the player doesn't have enough money, then return
@@ -88,6 +114,8 @@ function ShopService:BuyItem(player : Player?, itemName : string?)
         return
     end
 
+    -- Set the value of "bought" to true so it cannot be bought again
+    -- if the client requests it
     self.CurrentShopItems[itemName].Bought = true
 
     local dataName : string? = self.CurrentShopItems[itemName].OriginName
@@ -106,27 +134,29 @@ function ShopService:BuyItem(player : Player?, itemName : string?)
             return
         end
 
+        -- If the humanoid's health will go above the maxhealth,
+        -- then just set the humanoid's health to the value of maxhealth
         if humanoid.Health + self.CurrentShopItems[itemName].Amount > humanoid.MaxHealth then
             humanoid.Health = humanoid.MaxHealth
         else
             humanoid.Health += self.CurrentShopItems[itemName].Amount
         end
     else
+        -- Get the appropriate data, then update those stats
         local currentData = LeaderboardService:GetData(player, dataName)
         local newData = currentData + self.CurrentShopItems[itemName].Amount
 
         LeaderboardService:SetData(player, dataName, newData)
         CharacterSetupService:UpdateStatsOnPlayer(player, dataName)
     end
-
-    print(LeaderboardService.PlayerStats[player.UserId])
 end
 
 ----------------------------------------------
 -------------- Private Methods ---------------
 ----------------------------------------------
 
-function ShopService:_getShopNames()
+-- Return all shopnames
+function ShopService:_getShopNames() : table?
     local allNames = {}
     for key, value in pairs(SHOP_ITEMS) do
         table.insert(allNames, key)
@@ -135,7 +165,10 @@ function ShopService:_getShopNames()
     return allNames
 end
 
-function ShopService:_getRandomShopItem()
+-- Return a table entry of shop items
+function ShopService:_getRandomShopItem() : table?
+
+    -- Randomnumber sets how much stats and the costs of the buy
     local randomNumber : number? = math.random(1, 5)
     local shopNamesTable : table? = self:_getShopNames()
     
@@ -151,6 +184,7 @@ function ShopService:_getRandomShopItem()
     }
 end
 
+-- Generate all the shop items into a dictionary
 function ShopService:_generateAllShopItems()
     local newShop = {}
 
