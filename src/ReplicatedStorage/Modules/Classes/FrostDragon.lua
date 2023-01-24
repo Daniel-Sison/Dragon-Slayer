@@ -8,7 +8,29 @@ local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
 local Dragon = require(ReplicatedStorage.Source.Modules.Classes.Dragon)
 
--- This FrostDragon class inherits functions from the "Enemy" class
+
+--[[
+
+This Class inherits functions from the "Dragon" class.
+
+The public methods for this class override 
+default "Dragon" class methods of the same name.
+
+Public Methods:
+	- FrostDragon:GetFireProjectile()
+		- Replaces the default Fire Projectile with custom colors
+
+	- FrostDragon:GetFireExplosion()
+		- Replace the explosion particle with custom colors
+
+    - FrostDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+		- Deal a specialized elemental effect to the humanoid
+	
+	
+]]
+
+
+
 local FrostDragon = {}
 FrostDragon.__index = FrostDragon
 setmetatable(FrostDragon, Dragon)
@@ -38,6 +60,8 @@ end
 -------------- Public Methods ----------------
 ----------------------------------------------
 
+
+-- Replace the default projectile with provided colors
 function FrostDragon:GetFireProjectile()
     local fireball = Assets.Effects.Fireball:Clone()
     fireball.Parent = workspace.EffectStorage
@@ -54,6 +78,8 @@ function FrostDragon:GetFireProjectile()
 end
 
 
+
+-- Replace the default explosion with provided colors
 function FrostDragon:GetFireExplosion()
     local explosion = Assets.Effects.FireballPop:Clone()
 

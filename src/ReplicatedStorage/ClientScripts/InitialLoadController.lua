@@ -2,6 +2,18 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 
+--[[
+
+Usage:
+
+Public Methods:
+	- InitialLoadController:IntroFinished()
+		- Is called when the intro GUI is finished
+        - Calls the CharacterSetupService to start the player
+
+]]
+
+
 local InitialLoadController = Knit.CreateController {
     Name = "InitialLoadController",
 }
@@ -40,6 +52,8 @@ function InitialLoadController:KnitStart()
     local initialLoadIn = true
 
     player.CharacterAdded:Connect(function(character : Model?)
+
+        -- If player has already loaded in, then return
         if not initialLoadIn then
             return
         end
@@ -48,9 +62,11 @@ function InitialLoadController:KnitStart()
 
         task.wait(4)
 
+        -- Setup the intro camera
         camera.CameraType = Enum.CameraType.Scriptable
         camera.CFrame = camPositions.StartCam1.CFrame
     
+        -- Turn on the blur
         CameraController:ToggleBlur(true, 15)
     end)
 end

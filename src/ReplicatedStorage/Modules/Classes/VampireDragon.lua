@@ -8,7 +8,28 @@ local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
 local Dragon = require(ReplicatedStorage.Source.Modules.Classes.Dragon)
 
--- This VampireDragon class inherits functions from the "Enemy" class
+
+--[[
+
+This Class inherits functions from the "Dragon" class.
+
+The public methods for this class override 
+default "Dragon" class methods of the same name.
+
+Public Methods:
+	- VampireDragon:GetFireProjectile()
+		- Replaces the default Fire Projectile with custom colors
+
+	- VampireDragon:GetFireExplosion()
+		- Replace the explosion particle with custom colors
+
+    - VampireDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+		- Deal a specialized elemental effect to the humanoid
+	
+	
+]]
+
+
 local VampireDragon = {}
 VampireDragon.__index = VampireDragon
 setmetatable(VampireDragon, Dragon)
@@ -38,6 +59,7 @@ end
 ----------------------------------------------
 
 
+-- Replace the default projectile with provided colors
 function VampireDragon:GetFireProjectile()
     local fireball = Assets.Effects.Fireball:Clone()
     fireball.Parent = workspace.EffectStorage
@@ -54,6 +76,8 @@ function VampireDragon:GetFireProjectile()
 end
 
 
+
+-- Replace the default explosion with provided colors
 function VampireDragon:GetFireExplosion()
     local explosion = Assets.Effects.FireballPop:Clone()
 
@@ -67,11 +91,14 @@ function VampireDragon:GetFireExplosion()
     return explosion
 end
 
-
+-- Deal an elemental effect
 function VampireDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+
+    -- Create a beam
     local container = Assets.Effects.LifeDrainBeam
     local a0 : Attachment?, a1 : Attachment? = ParticleHandler:BeamLink(self.HumanoidRootPart, root, container)
 
+    -- Deal damage to the player, while healing the dragon
     for i = 1, 3 do
         task.delay(1 * i, function()
             if humanoid and humanoid.Health > 0 then
@@ -79,6 +106,7 @@ function VampireDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart
                 self.Humanoid.Health += 10
             end
 
+            -- At the end of the loop, destroy the beam
             if i == 3 then
                 a1:Destroy()
                 a0:Destroy()

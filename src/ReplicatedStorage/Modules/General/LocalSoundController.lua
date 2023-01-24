@@ -1,6 +1,17 @@
 local LocalSoundController = {}
 
 
+--[[
+
+Usage:
+
+Public Methods:
+    - LocalSoundController:PlaySound(targetName : string?, fadeOutOtherSounds : boolean?, fadeIn : boolean?, seconds : number?)
+        - Play a certain sound in the SoundService locally
+
+]]
+
+
 ----------- Services -----------
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,6 +26,7 @@ local player = game.Players.LocalPlayer
 
 
 ----------- Public Functions -----------
+
 
 function LocalSoundController:PlaySound(targetName : string?, fadeOutOtherSounds : boolean?, fadeIn : boolean?, seconds : number?)
 	

@@ -8,7 +8,28 @@ local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
 local Dragon = require(ReplicatedStorage.Source.Modules.Classes.Dragon)
 
--- This ElectricDragon class inherits functions from the "Enemy" class
+
+--[[
+
+This Class inherits functions from the "Dragon" class.
+
+The public methods for this class override 
+default "Dragon" class methods of the same name.
+
+Public Methods:
+	- ElectricDragon:GetFireProjectile()
+		- Replaces the default Fire Projectile with custom colors
+
+	- ElectricDragon:GetFireExplosion()
+		- Replace the explosion particle with custom colors
+
+    - ElectricDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+		- Deal a specialized elemental effect to the humanoid
+	
+	
+]]
+
+
 local ElectricDragon = {}
 ElectricDragon.__index = ElectricDragon
 setmetatable(ElectricDragon, Dragon)
@@ -39,7 +60,7 @@ end
 ----------------------------------------------
 
 
-
+-- Replace the default projectile with provided colors
 function ElectricDragon:GetFireProjectile()
     local fireball = Assets.Effects.Fireball:Clone()
     fireball.Parent = workspace.EffectStorage
@@ -56,6 +77,8 @@ function ElectricDragon:GetFireProjectile()
 end
 
 
+
+-- Replace the default explosion with provided colors
 function ElectricDragon:GetFireExplosion()
     local explosion = Assets.Effects.FireballPop:Clone()
 
@@ -71,14 +94,19 @@ end
 
 
 function ElectricDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+
+    -- Clone electricity effect
     local electricAttachment : Attachment? = Assets.Effects.Electricity.Attachment:Clone()
     electricAttachment.Parent = root
 
+    -- Make the humanoid unable to walk
     humanoid.PlatformStand = true
 
+    -- Lasts for 1.5 seconds
     local duration = 1.5
     local pulseAmount = 5
 
+    -- Pulse the electric particle 5 times within the duration
     for i = 1, pulseAmount do
         task.delay((duration / pulseAmount) * i, function()
             for index, particle in ipairs(electricAttachment:GetChildren()) do
@@ -87,6 +115,7 @@ function ElectricDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePar
         end)
     end
 
+    -- At the end of the duration, player can walk and destroy the electric particle
     task.delay(duration, function()
         humanoid.PlatformStand = false
         electricAttachment:Destroy()

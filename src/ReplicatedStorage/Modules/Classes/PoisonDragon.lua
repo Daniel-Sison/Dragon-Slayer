@@ -8,7 +8,28 @@ local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
 local Dragon = require(ReplicatedStorage.Source.Modules.Classes.Dragon)
 
--- This PoisonDragon class inherits functions from the "Enemy" class
+
+--[[
+
+This Class inherits functions from the "Dragon" class.
+
+The public methods for this class override 
+default "Dragon" class methods of the same name.
+
+Public Methods:
+	- PoisonDragon:GetFireProjectile()
+		- Replaces the default Fire Projectile with custom colors
+
+	- PoisonDragon:GetFireExplosion()
+		- Replace the explosion particle with custom colors
+
+    - PoisonDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+		- Deal a specialized elemental effect to the humanoid
+	
+	
+]]
+
+
 local PoisonDragon = {}
 PoisonDragon.__index = PoisonDragon
 setmetatable(PoisonDragon, Dragon)
@@ -39,6 +60,7 @@ end
 ----------------------------------------------
 
 
+-- Replace the default projectile with provided colors
 function PoisonDragon:GetFireProjectile()
     local fireball = Assets.Effects.Fireball:Clone()
     fireball.Parent = workspace.EffectStorage
@@ -55,6 +77,7 @@ function PoisonDragon:GetFireProjectile()
 end
 
 
+-- Replace the default explosion with provided colors
 function PoisonDragon:GetFireExplosion()
     local explosion = Assets.Effects.FireballPop:Clone()
 
@@ -70,18 +93,22 @@ end
 
 
 function PoisonDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+    -- The poison particle
     local poison = Assets.Effects.Poison:Clone()
     poison.Parent = root
 
+    -- The smoke behind the poison particle
 	local backdrop = Assets.Effects.PoisonBackdrop:Clone()
     backdrop.Parent = root
 
+    -- Deals 4 damage to the player
     for i = 1, 4 do
         task.delay(1 * i, function()
             if humanoid and humanoid.Health > 0 then
                 humanoid:TakeDamage(1)
             end
 
+            -- Destroy particle on the last loop
             if i == 4 then
                 poison:Destroy()
 				backdrop:Destroy()

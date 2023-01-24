@@ -8,7 +8,29 @@ local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
 local Dragon = require(ReplicatedStorage.Source.Modules.Classes.Dragon)
 
--- This ShadowDragon class inherits functions from the "Enemy" class
+
+--[[
+
+This Class inherits functions from the "Dragon" class.
+
+The public methods for this class override 
+default "Dragon" class methods of the same name.
+
+Public Methods:
+	- ShadowDragon:GetFireProjectile()
+		- Replaces the default Fire Projectile with custom colors
+
+	- ShadowDragon:GetFireExplosion()
+		- Replace the explosion particle with custom colors
+
+    - ShadowDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+		- Deal a specialized elemental effect to the humanoid
+	
+	
+]]
+
+
+
 local ShadowDragon = {}
 ShadowDragon.__index = ShadowDragon
 setmetatable(ShadowDragon, Dragon)
@@ -38,7 +60,7 @@ end
 -------------- Public Methods ----------------
 ----------------------------------------------
 
-
+-- Replace the default projectile with provided colors
 function ShadowDragon:GetFireProjectile()
     local fireball = Assets.Effects.Fireball:Clone()
     fireball.Parent = workspace.EffectStorage
@@ -55,6 +77,7 @@ function ShadowDragon:GetFireProjectile()
 end
 
 
+-- Replace the default explosion with provided colors
 function ShadowDragon:GetFireExplosion()
     local explosion = Assets.Effects.FireballPop:Clone()
 
@@ -75,27 +98,34 @@ function ShadowDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?
 		return
 	end
 
+	-- Find the player's PlayerGui
+	-- If it doesn't exist, return
 	if not player:FindFirstChild("PlayerGui") then
 		return
 	end
 
+	-- Clone the blindness GUI from the effects folder
 	local blindness = Assets.Effects.Blindness:Clone()
 	blindness.Parent = player.PlayerGui
 
+	-- Fade in the general tween
 	local fadeIn = GeneralTween:SimpleTween(
 		blindness.Frame,
 		{BackgroundTransparency = 0},
 		0.5
 	)
 
+	
 	fadeIn.Completed:Connect(function()
 		task.delay(1, function()
+			-- Fade out the darkness
 			local fadeOut = GeneralTween:SimpleTween(
 				blindness.Frame,
 				{BackgroundTransparency = 1},
 				0.5
 			)
 
+			-- When the fade is completed, the blindness GUI gets destroyed
 			fadeOut.Completed:Connect(function()
 				blindness:Destroy()
 			end)

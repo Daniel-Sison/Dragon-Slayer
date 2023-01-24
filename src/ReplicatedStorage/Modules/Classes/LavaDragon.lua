@@ -8,7 +8,22 @@ local Raycaster = require(ReplicatedStorage.Source.Modules.General.Raycaster)
 
 local Dragon = require(ReplicatedStorage.Source.Modules.Classes.Dragon)
 
--- This LavaDragon class inherits functions from the "Enemy" class
+
+--[[
+
+This Class inherits functions from the "Dragon" class.
+
+The public methods for this class override 
+default "Dragon" class methods of the same name.
+
+Public Methods:
+    - LavaDragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
+		- Replaces the regular Bite method of the dragon class with a custom Bite.
+	
+	
+]]
+
+
 local LavaDragon = {}
 LavaDragon.__index = LavaDragon
 setmetatable(LavaDragon, Dragon)
@@ -42,21 +57,29 @@ end
 ----------------------------------------------
 
 
+-- Replaces the Dragon parent class bite
 function LavaDragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
+
+	-- Copy the LavaCircle part
 	local lavaCircle : Part? = Assets.Effects.LavaCircle:Clone()
 	lavaCircle.Position = self.HumanoidRootPart.Position - Vector3.new(0, 2.85, 0)
 	lavaCircle.Parent = workspace.EffectStorage
+
+	-- Insert the lavaCircle into the LavaContainer
 	table.insert(self.LavaContainer, lavaCircle)
 
+	-- When the lava circle is touched, then set player on fire
 	lavaCircle.Touched:Connect(function(hitPart : BasePart?)
 		if not hitPart:IsDescendantOf(targetRoot.Parent) then
 			return
 		end
 
+		-- If the player is already burning, then return
 		if targetRoot:FindFirstChild("Flames") then
 			return
 		end
 
+		-- Calls the default Dragon method "Burn"
 		self:Burn(targetHumanoid, targetRoot)
 	end)
 
@@ -66,6 +89,8 @@ function LavaDragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
 		1
 	)
 
+
+	-- The regular bite code
 	if not Raycaster:IsFacing(self.Body, targetRoot.Parent) then
         return
     end
@@ -87,6 +112,7 @@ end
 -------------- Private Methods ---------------
 ----------------------------------------------
 
+-- When dragon dies, clean up the lava
 function LavaDragon:_cleanLavaOnDeath()
 	self.Humanoid.Died:Connect(function()
 		if not self.LavaContainer then
@@ -97,19 +123,21 @@ function LavaDragon:_cleanLavaOnDeath()
 	end)
 end
 
-
+-- Cleans the lava
 function LavaDragon:_cleanLava()
 	for index, oldLava in ipairs(self.LavaContainer) do
 		if not oldLava then
 			continue
 		end
 
+		-- Fade tween
 		local hideTween = GeneralTween:SimpleTween(
 			oldLava,
 			{Transparency = 1},
 			1
 		)
 
+		-- as soon as the tween is completed, then destroy the lava
 		hideTween.Completed:Connect(function()
 			oldLava:Destroy()
 		end)

@@ -1,6 +1,24 @@
 local GeneralUI = {}
 
 
+--[[
+
+Usage:
+
+Public Methods:
+    - GeneralUI:Configure(frame : Frame?, hiddenPos : UDim2?)
+		- Set origin position, size, and hidden position as attributes for easy access
+
+	- GeneralUI:PlayUI(targetName : string?)
+		- Play a certain UI from the ReplicatedStorage
+
+	- GeneralUI:SimpleTween(frame, goal, duration, easingStyle, easingDirection)
+		- Automatically play a tween and set the parameters in one function
+		- Default is EasingStyle Quad for 1 second.
+]]
+
+
+
 ----------- Services -----------
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")

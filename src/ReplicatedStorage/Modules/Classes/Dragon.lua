@@ -39,6 +39,15 @@ Public Methods:
 
     - Dragon:Roam()
         - Dragon will roam around its origin point
+
+    - Dragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
+        - Default bite attack
+    
+    - Dragon:Burn(humanoid : Humanoid?, root : BasePart?)
+        - Default burn effect
+
+    - Dragon:RecolorParticles(container : any?, colorSequence : ColorSequence?)
+        - Recolors given paricles, applies the new colorsequence
 ]]
 
 
@@ -217,48 +226,62 @@ function Dragon:MoveDragonTo(position : Vector3?)
     end)
 end
 
---- These methods will probably be overridden by specific class.
 
+---
+--- The following methods will probably be overridden by specific class ---
+---
+
+
+-- Bite the player
 function Dragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
+
+    -- Will only bite if the dragon is facing the player
     if not Raycaster:IsFacing(self.Body, targetRoot.Parent) then
         return
     end
 
+    -- Determines the range of the bite
     if (self.Mouth.Position - targetRoot.Position).Magnitude < 20 then
         targetHumanoid:TakeDamage(self.BaseBiteDamage)
     end
 end
 
 
+-- Returns the fire projectile part
 function Dragon:GetFireProjectile()
-    local fireball = Assets.Effects.Fireball:Clone()
+    local fireball : BasePart? = Assets.Effects.Fireball:Clone()
     fireball.Parent = workspace.EffectStorage
     fireball.CFrame = self.Mouth.CFrame
 
     return fireball
 end
 
-
+-- Returns the fire explosion part
 function Dragon:GetFireExplosion()
-    local explosion = Assets.Effects.FireballPop:Clone()
+    local explosion : BasePart? = Assets.Effects.FireballPop:Clone()
     return explosion
 end
 
 
+-- The default doesn't deal any elemental effects, just does damage
 function Dragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
-   
+   return
 end
 
+
+-- Default burn method
 function Dragon:Burn(humanoid : Humanoid?, root : BasePart?)
     local flames : ParticleEmitter? = Assets.Effects.Flames:Clone()
     flames.Parent = root
 
+    -- Burn the player 4 times for 1 damage
     for i = 1, 4 do
         task.delay(1 * i, function()
             if humanoid and humanoid.Health > 0 then
                 humanoid:TakeDamage(1)
             end
 
+            -- Cleanup flames on last loop
             if i == 4 then
                 flames:Destroy()
             end
@@ -266,7 +289,8 @@ function Dragon:Burn(humanoid : Humanoid?, root : BasePart?)
     end
 end
 
-
+-- Recolor the specified particles in a container
+-- the colorSequence gets passed onto each particle
 function Dragon:RecolorParticles(container : any?, colorSequence : ColorSequence?)
     for index, particle in ipairs(container:GetDescendants()) do
         if not particle:IsA("ParticleEmitter") then
@@ -322,23 +346,31 @@ end
 
 -- When the dragon dies, these connections clean up
 function Dragon:_setupHumanoidConnections()
+
+    -- Setup the humanoid health stats based on level
     self.Humanoid.MaxHealth = self.Level * 100
     self.Humanoid.Health = self.Humanoid.MaxHealth
 
+    -- Watch for when the Dragon dies
     local deathConnection
     deathConnection = self.Humanoid.Died:Connect(function()
+
+        -- Play the death animation
         local deathAnim = self:_playAnimation("Death", true)
         local connection
         connection = deathAnim.Stopped:Connect(function()
             connection:Disconnect()
             connection = nil
 
+            -- Delete the body when death animation completed
             self:_deleteBody()
         end)
 
+        -- Disconnect the death connection 
         deathConnection:Disconnect()
         deathConnection = nil
 
+        -- Play death sound
         local deathSound : Sound? = Assets.Sounds.DragonRoar:Clone()
         deathSound.Parent = self.HumanoidRootPart
         deathSound.PlayOnRemove = true
@@ -347,7 +379,7 @@ function Dragon:_setupHumanoidConnections()
             deathSound:Destroy()
         end)
 
-        -- Coin drop
+        -- Coin drop, amount dropped is based on level
         Knit.GetService("CoinService"):SpawnCoinsAt(
             self.HumanoidRootPart.Position + Vector3.new(0, 5, 0),
             (10 * self.Level) + math.random(1, 10)
@@ -368,6 +400,7 @@ function Dragon:_setupHumanoidConnections()
     end)
 end
 
+-- Deletes the body of the dragon
 function Dragon:_deleteBody()
     for index, part in ipairs(self.Body:GetDescendants()) do
         if not part:IsA("BasePart") then
@@ -377,6 +410,7 @@ function Dragon:_deleteBody()
         part.Anchored = true
         part.CanCollide = false
 
+        -- Allows the dragon body to fade away
         GeneralTween:SimpleTween(
             part,
             {Transparency = 1},
@@ -386,16 +420,20 @@ function Dragon:_deleteBody()
         )
     end
 
+    -- After 1.5 seconds, clean up the object
     task.delay(1.5, function()
         self:Clean()
     end)
 end
 
 
+-- Creates a lerp between the specified points
 function Dragon:_lerp(a, b, t)
 	return a + (b - a) * t
 end
 
+-- Creates a bezier curve between the specified points
+-- the fireball follows the curve
 function Dragon:_quadraticBezier(t, p0, p1, p2)
 	local l1 = self:_lerp(p0, p1, t)
 	local l2 = self:_lerp(p1, p2, t)
@@ -403,13 +441,17 @@ function Dragon:_quadraticBezier(t, p0, p1, p2)
 	return quad
 end
 
-
+-- When the dragon breathes the fireball
+-- this function is called
 function Dragon:_runFireBreath()
+
+    -- If the root doesnt exist anymore, return
     local targetRoot : BasePart? = self.Target:FindFirstChild("HumanoidRootPart")
     if not targetRoot then
         return
     end
 
+    -- if the Dragon is dead, return
     if self.Humanoid.Health <= 0 then
         return
     end
@@ -476,10 +518,13 @@ function Dragon:_runFireBreath()
 end
 
 
-
+-- When the fireball explodes after reaching the target location
 function Dragon:_fireballPopDamage(explosionPosition : Vector3?)
+    -- Describes the hit radius of the explosion
     local radius : number? = 12
 
+    -- Gets all models that are players
+    -- deals damage to them
     for _, model in ipairs(workspace:GetDescendants()) do
         if not model:IsA("Model") then
             continue

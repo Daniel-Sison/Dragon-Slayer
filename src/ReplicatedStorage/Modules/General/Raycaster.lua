@@ -1,6 +1,8 @@
 local module = {}
 
 
+-- Raycast from one point to another
+-- Will return the result
 function module:Cast(originPoint : Vector3?, destinationPoint : Vector3?, ignoreList : table?)
 	local raycastResult
 

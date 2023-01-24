@@ -2,6 +2,28 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local GeneralTween = require(ReplicatedStorage.Source.Modules.General.GeneralTween)
 
+
+
+--[[
+
+Usage:
+
+Public Methods:
+	- CameraController:ResetCameraToDefault()
+		- Reset the camera back to the player
+
+	- CameraController:ToggleBlur(value, size)
+		- Turn a blur on or off, given the size
+
+    - CameraController:CameraToPart(part, duration, easingStyle, easingDirection)
+		- Move the camera to a certan part with defined tween
+	
+	
+]]
+
+
+
+
 local CameraController = Knit.CreateController {
     Name = "CameraController",
 }

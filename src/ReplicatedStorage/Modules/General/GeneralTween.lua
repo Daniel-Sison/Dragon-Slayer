@@ -1,6 +1,19 @@
 local GeneralTween = {}
 
 
+
+--[[
+
+Usage:
+
+Public Methods:
+    - GeneralTween:SimpleTween(item : any?, goal, duration, easingStyle, easingDirection)
+		- A simple tween for any item
+		- Similar to GeneralUI:SimpleTween
+]]
+
+
+
 ----------- Services -----------
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
