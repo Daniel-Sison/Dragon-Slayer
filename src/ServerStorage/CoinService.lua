@@ -7,14 +7,14 @@ local GeneralTween = require(ReplicatedStorage.Source.Modules.General.GeneralTwe
 Usage:
 
 Public Methods:
-    - CoinService:ShowChangesInCoinUI(player : Player?)
+    - CoinService:ShowChangesInCoinUI(player : Player)
         - If the coin amount changes, then reflect that in the UI
 
-    - CoinService:CoinCollected(player : Player?)
+    - CoinService:CoinCollected(player : Player)
         - If a coin is collected by the player, then
         - update their total amount and show the changes in the UI
     
-    - CoinService:SpawnCoinsAt(position : Vector3?, amount : number?)
+    - CoinService:SpawnCoinsAt(position : Vector3, amount : number)
         - Spawn coins at a position with provided amount
         - Called whenever a dragon is killed
 
@@ -34,14 +34,22 @@ local LeaderboardService
 -------------- Public Methods ----------------
 ----------------------------------------------
 
-function CoinService:ShowChangesInCoinUI(player : Player?)
-    self.Client.UpdateCoinUI:Fire(player, LeaderboardService:GetData(player, "Coins"))
+function CoinService:ShowChangesInCoinUI(player : Player)
+    self.Client.UpdateCoinUI:Fire(
+        player,
+        LeaderboardService:GetData(player, "Coins")
+    )
 end
 
 
-function CoinService:CoinCollected(player : Player?)
+function CoinService:CoinCollected(player : Player)
     -- Get the current coin amount from the LeaderboardService
     local coinAmount : number? = LeaderboardService:GetData(player, "Coins")
+    if not coinAmount then
+        warn("Failed to get coin amount")
+        return
+    end
+
     coinAmount += 1
 
     -- Update coin amount
@@ -53,7 +61,7 @@ end
 
 
 -- Spawn a collection of coins with a specified amount
-function CoinService:SpawnCoinsAt(position : Vector3?, amount : number?)
+function CoinService:SpawnCoinsAt(position : Vector3, amount : number)
     -- Table to hold all the coins
     local allCoins = {}
 
@@ -83,7 +91,7 @@ end
 ----------------------------------------------
 
 -- Watch the coins to be collected
-function CoinService:_setupCoinsForCollection(allCoins : table?)
+function CoinService:_setupCoinsForCollection(allCoins : {Model?})
     local heartBeatConnection = game:GetService("RunService").Heartbeat:Connect(function()
         self:_checkIfCoinCollected(allCoins)
     end)
@@ -106,7 +114,7 @@ end
 
 
 -- Run through each coin and check if it has been collected yet
-function CoinService:_checkIfCoinCollected(allCoins : table?)
+function CoinService:_checkIfCoinCollected(allCoins : {Model?})
     for _, coin in ipairs(allCoins) do
 
         -- Use "Collected" attribute as a debounce tool
@@ -133,7 +141,9 @@ function CoinService:_checkIfCoinCollected(allCoins : table?)
 
         collectTween.Completed:Connect(function()
             -- Get the player based on the closest Player root
-            local player = game.Players:GetPlayerFromCharacter(closestPlayerRoot.Parent)
+            local player = game.Players:GetPlayerFromCharacter(
+                closestPlayerRoot.Parent
+            )
             if not player then 
                 return 
             end
@@ -147,8 +157,8 @@ function CoinService:_checkIfCoinCollected(allCoins : table?)
 end
 
 -- Find the closest player root part
-function CoinService:_findClosestPlayerRoot(coin : BasePart?)
-    for index, player in ipairs(game.Players:GetChildren()) do
+function CoinService:_findClosestPlayerRoot(coin : BasePart)
+    for _, player in ipairs(game.Players:GetChildren()) do
         if not player:IsA("Player") then
             continue
         end
@@ -162,7 +172,7 @@ function CoinService:_findClosestPlayerRoot(coin : BasePart?)
             return
         end
 
-        local root : BasePart? = player.Character:FindFirstChild("HumanoidRootPart")
+        local root : BasePart = player.Character:FindFirstChild("HumanoidRootPart")
         if not root then
             continue
         end
@@ -177,7 +187,11 @@ end
 
 -- All coins follow this coin's cframe
 function CoinService:_spinCoinIdeal()
-    self.CoinIdeal.CFrame = self.CoinIdeal.CFrame * CFrame.fromEulerAnglesXYZ(math.rad(90), 0, 0)
+    self.CoinIdeal.CFrame = self.CoinIdeal.CFrame * CFrame.fromEulerAnglesXYZ(
+        math.rad(90),
+        0,
+        0
+    )
 
     task.delay(0.5, function()
         self:_spinCoinIdeal()

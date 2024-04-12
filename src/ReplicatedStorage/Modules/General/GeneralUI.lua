@@ -34,7 +34,7 @@ local player = game.Players.LocalPlayer
 
 -- This is used to save the original and hidden locations of a designated frame.
 -- It is not a required method to use this module, but it is very helpful.
-function GeneralUI:Configure(frame : Frame?, hiddenPos : UDim2?)
+function GeneralUI:Configure(frame : Frame, hiddenPos : UDim2)
 	frame:SetAttribute("OriginPosition", frame.Position)
 	frame:SetAttribute("OriginSize", frame.Size)
 	
@@ -46,7 +46,7 @@ end
 
 -- This will find the appropriate UI in the ReplicatedStorage
 -- Assuming there is a folder called "UI" in the ReplicatedStorage that holds GUIs.
-function GeneralUI:PlayUI(targetName : string?)
+function GeneralUI:PlayUI(targetName : string)
 	local gui : ScreenGui? = ReplicatedStorage.UI:FindFirstChild(targetName)
 	
 	if not gui then
@@ -61,7 +61,14 @@ end
 -- Call the tween on the UI
 -- If only the frame and goal are passed as parameters, 
 -- then the function will default to what is provided.
-function GeneralUI:SimpleTween(frame, goal, duration, easingStyle, easingDirection)
+function GeneralUI:SimpleTween(
+	frame: Frame,
+	goal: {},
+	duration: number?,
+	easingStyle: Enum.EasingStyle?,
+	easingDirection: Enum.EasingDirection?
+)
+
 	if not duration then
 		duration = 1
 	end

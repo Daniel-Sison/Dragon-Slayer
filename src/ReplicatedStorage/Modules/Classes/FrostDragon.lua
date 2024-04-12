@@ -45,7 +45,7 @@ setmetatable(FrostDragon, Dragon)
 ----------------------------------------------
 
 
-function FrostDragon.new(spawnPosition : Vector3?, level : number?)
+function FrostDragon.new(spawnPosition : Vector3, level : number)
 	local frostDragonObject = Dragon.new("Frost Dragon", spawnPosition)
 	setmetatable(frostDragonObject, FrostDragon)
 	
@@ -94,7 +94,11 @@ function FrostDragon:GetFireExplosion()
 end
 
 
-function FrostDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+function FrostDragon:DealElementalEffect(
+	humanoid : Humanoid?,
+	root : BasePart?,
+	explosionPosition : Vector3?
+)
     return
 end
 

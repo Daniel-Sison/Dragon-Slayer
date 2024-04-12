@@ -9,7 +9,7 @@ local StarterGui = game:GetService("StarterGui")
 Usage:
 
 Public Methods:
-    - GameEndGuiController:GameEnded(playerWon : boolean?)
+    - GameEndGuiController:GameEnded(playerWon : boolean)
         - Runs when the game has ended
         - Reveals the "Play Again" button
 
@@ -35,7 +35,7 @@ local CharacterSetupService
 ----------------------------------------------
 
 
-function GameEndGuiController:GameEnded(playerWon : boolean?)
+function GameEndGuiController:GameEnded(playerWon : boolean)
     -- Disable resetting while this screen is active
     StarterGui:SetCore("ResetButtonCallback", false)
 

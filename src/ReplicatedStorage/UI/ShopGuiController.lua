@@ -110,7 +110,10 @@ function ShopGuiController:KnitStart()
     self.Container = self.Gui:WaitForChild("Container")
 
     -- Sets the second argument as the element's attribute as "HiddenPosition"
-    GeneralUI:Configure(self.Container, self.Container.Position + UDim2.new(1, 0, 0, 0))
+    GeneralUI:Configure(
+        self.Container,
+        self.Container.Position + UDim2.new(1, 0, 0, 0)
+    )
 
     -- When the player is done shopping
     self.Container.DoneButton.Activated:Connect(function()
@@ -143,7 +146,7 @@ function ShopGuiController:KnitStart()
 
             debounce = false
 
-            LeaderboardService:GetData("Coins"):andThen(function(coinAmount)
+            LeaderboardService:GetData("Coins"):andThen(function(coinAmount: number)
                 -- Will attempt to buy on the server
                 -- If the server confirms the buy, then it will be bought
                 ShopService:BuyItem(button.Parent.Name)

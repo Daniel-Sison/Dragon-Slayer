@@ -10,7 +10,7 @@ local Assets = ReplicatedStorage.Assets
 
 -- Setup a beam between two parts
 -- Returns two attachments, which can be deleted to destroy the beam
-function module:BeamLink(part0 : BasePart?, part1 : BasePart?, container : any?)
+function module:BeamLink(part0 : BasePart, part1 : BasePart, container : any)
     local beam = container:FindFirstChild("Beam", true)
     if not beam then
         warn("No beam in this container")
@@ -33,7 +33,13 @@ function module:BeamLink(part0 : BasePart?, part1 : BasePart?, container : any?)
 end
 
 -- Pulse a certain effect until the humanoid dies
-function module:PulseUntilDeath(core : BasePart?, humanoid : Humanoid?, particleName : string?, pulseDelay : number?)
+function module:PulseUntilDeath(
+    core : BasePart,
+    humanoid : Humanoid,
+    particleName : string,
+    pulseDelay : number
+)
+
     local attach = Instance.new("Attachment")
     attach.Parent = core
 
@@ -73,7 +79,12 @@ end
 
 -- Play a given particle
 -- Can be created at a certain position
-function module:PlayParticleGiven(container : BasePart?, part : BasePart?, special : table?) : BasePart?
+function module:PlayParticleGiven(
+    container : BasePart,
+    part : BasePart,
+    special : table
+) : BasePart?
+
     if not container then
         warn("No particle given")
         return
@@ -95,7 +106,12 @@ end
 
 -- Play a certain particle, like previous function
 -- This function takes a string instead of a container
-function module:PlayParticle(particleContainerName : string?, part : BasePart?, special : table?) : BasePart?
+function module:PlayParticle(
+    particleContainerName : string,
+    part : BasePart,
+    special : table
+) : BasePart?
+
     local container : BasePart? = Assets.Effects:FindFirstChild(particleContainerName)
     if not container then
         warn("No particle of this name in Effects")
@@ -119,10 +135,10 @@ function module:PlayParticle(particleContainerName : string?, part : BasePart?, 
 end
 
 -- The earth circle effect that the Earth Dragon uses
-function module:EarthCircleEffect(targetPart : Part?)
-	local rayParams : RaycastParams? = RaycastParams.new()
+function module:EarthCircleEffect(targetPart : Part)
+	local rayParams : RaycastParams = RaycastParams.new()
 	rayParams.FilterDescendantsInstances = {workspace.EffectStorage}
-	rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+	rayParams.FilterType = Enum.RaycastFilterType.Exclude
 	
 	local angle = 0
 	
@@ -135,10 +151,18 @@ function module:EarthCircleEffect(targetPart : Part?)
         -- Some part settings
 		part.Anchored = true
 		part.Size = Vector3.new(1, 1, 1)
-		part.CFrame = targetPart.CFrame * CFrame.fromEulerAnglesXYZ(0, math.rad(angle), 0) * CFrame.new(10, 5, 0)
+		part.CFrame = targetPart.CFrame * CFrame.fromEulerAnglesXYZ(
+            0,
+            math.rad(angle),
+            0
+        ) * CFrame.new(10, 5, 0)
 		
         -- Create a raycast from the part
-		local raycastResult = workspace:Raycast(part.CFrame.Position, part.CFrame.UpVector * - 10, rayParams)
+		local raycastResult = workspace:Raycast(
+            part.CFrame.Position,
+            part.CFrame.UpVector * - 10,
+            rayParams
+        )
 		if not raycastResult then
             continue
         end
@@ -146,13 +170,20 @@ function module:EarthCircleEffect(targetPart : Part?)
         part.Position = raycastResult.Position + Vector3.new(0, -5, 0)
         part.Material = Enum.Material.Basalt
         part.Color = raycastResult.Instance.Color
-        part.Orientation = Vector3.new(math.random(-180,180), math.random(-180,180), math.random(-180,180))
+        part.Orientation = Vector3.new(
+            math.random(-180,180),
+            math.random(-180,180),
+            math.random(-180,180)
+        )
         part.Parent = game.Workspace.EffectStorage
 
         -- Tween part from hidden position to origin position
         GeneralTween:SimpleTween(
             part,
-            {Position = part.Position + Vector3.new(0, 5, 0), Size = Vector3.new(targetSize, targetSize, targetSize)},
+            {
+                Position = part.Position + Vector3.new(0, 5, 0),
+                Size = Vector3.new(targetSize, targetSize, targetSize)
+            },
             0.25,
             Enum.EasingStyle.Bounce,
             Enum.EasingDirection.InOut
@@ -162,7 +193,10 @@ function module:EarthCircleEffect(targetPart : Part?)
         task.delay(4, function()
             local fadeTween = GeneralTween:SimpleTween(
                 part,
-                {Transparency = 1, Position = part.Position + Vector3.new(0, -5, 0)},
+                {
+                    Transparency = 1,
+                    Position = part.Position + Vector3.new(0, -5, 0)
+                },
                 1
             )
 
@@ -177,7 +211,7 @@ function module:EarthCircleEffect(targetPart : Part?)
 end
 
 -- Emit all particles in a given container instantly
-function module:EmitInstant(item : any?)
+function module:EmitInstant(item : any)
     for _, particle in ipairs(item:GetDescendants()) do
         if not particle:IsA("ParticleEmitter") then
             continue
@@ -188,7 +222,7 @@ function module:EmitInstant(item : any?)
 end
 
 -- Emit all particles in a given container, with special conditions
-function module:EmitParticles(item : any?, special : table?)
+function module:EmitParticles(item : any, special : table)
     local longestLifetime = 1
 
     for _, particle in ipairs(item:GetDescendants()) do

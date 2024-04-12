@@ -6,7 +6,12 @@ local LocalSoundController = {}
 Usage:
 
 Public Methods:
-    - LocalSoundController:PlaySound(targetName : string?, fadeOutOtherSounds : boolean?, fadeIn : boolean?, seconds : number?)
+    - LocalSoundController:PlaySound(
+		targetName : string?,
+		fadeOutOtherSounds : boolean?,
+		fadeIn : boolean?,
+		seconds : number?
+	)
         - Play a certain sound in the SoundService locally
 
 ]]
@@ -28,7 +33,12 @@ local player = game.Players.LocalPlayer
 ----------- Public Functions -----------
 
 
-function LocalSoundController:PlaySound(targetName : string?, fadeOutOtherSounds : boolean?, fadeIn : boolean?, seconds : number?)
+function LocalSoundController:PlaySound(
+	targetName : string,
+	fadeOutOtherSounds : boolean?,
+	fadeIn : boolean?,
+	seconds : number?
+)
 	
 	-- If the targetSound cannot be found, then return
 	local targetSound : Sound? = SoundService:FindFirstChild(targetName)
@@ -78,8 +88,8 @@ end
 
 ----------- Private Functions -----------
 
-function LocalSoundController:_fadeOutOtherSounds(ignoreSound)
-	for index, sound in ipairs(SoundService:GetDescendants()) do
+function LocalSoundController:_fadeOutOtherSounds(ignoreSound: Sound)
+	for _, sound in ipairs(SoundService:GetDescendants()) do
 		
 		-- Ignore playing sounds
 		if not sound.Playing then

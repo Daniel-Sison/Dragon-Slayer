@@ -6,7 +6,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 Usage:
 
 Public Methods:
-    - PortalService:FindClosestPortal(givenPosition : Vector3?)
+    - PortalService:FindClosestPortal(givenPosition : Vector3)
         - Find the closest portal with the given position
         - Returns that portal
 
@@ -34,7 +34,7 @@ local CharacterSetupService
 ----------------------------------------------
 
 -- Search for closest portal
-function PortalService:FindClosestPortal(givenPosition : Vector3?) : Model?
+function PortalService:FindClosestPortal(givenPosition : Vector3) : Model?
 
     -- Initiate targetportal variable
     local targetPortal = nil
@@ -42,7 +42,7 @@ function PortalService:FindClosestPortal(givenPosition : Vector3?) : Model?
     -- Any portal closer than closest distance will replace this value
     local closestDistance = math.huge
 
-    for index, model in ipairs(self.Portals:GetChildren()) do
+    for _, model in ipairs(self.Portals:GetChildren()) do
         -- Filter through all non-models of the Portals folder
         if not model:IsA("Model") then
             continue
@@ -66,7 +66,7 @@ function PortalService:FindClosestPortal(givenPosition : Vector3?) : Model?
     return targetPortal
 end
 
-function PortalService:OpenClosestPortal(player)
+function PortalService:OpenClosestPortal(player: Player)
     if not player then
         return
     end

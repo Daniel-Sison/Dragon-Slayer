@@ -6,11 +6,11 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 Usage:
 
 Public Methods:
-    - DragonService:SelectRandomDragon(locationPart : BasePart?, level : number?)
+    - DragonService:SelectRandomDragon(locationPart : BasePart, level : number)
         - Find a random dragon in the available dragons folder
         - Spawns it at the specified part at the specified level
 
-    - DragonService:SpawnDragons(locationName : string?, level : number?)
+    - DragonService:SpawnDragons(locationName : string, level : number)
         - Go through each available dragon spawn location and spawn a dragon
         - Calls "SelectRandomDragon" on each location
     
@@ -32,8 +32,6 @@ local Modules = ReplicatedStorage.Source.Modules
 local Classes = Modules.Classes
 local Assets = ReplicatedStorage.Assets
 
-local Dragon = require(Classes.Dragon)
-local FrostDragon = require(Classes.FrostDragon)
 
 local CharacterSetupService
 
@@ -54,9 +52,9 @@ local CUSTOM_DRAGONS = {
 ----------------------------------------------
 
 -- Select a random dragon from the dragons folder
-function DragonService:SelectRandomDragon(locationPart : BasePart?, level : number?)
-    local originDragonName : string? = self:_randomDragonName()
-    local targetDragonName : string? = string.gsub(originDragonName, " ", "")
+function DragonService:SelectRandomDragon(locationPart : BasePart, level : number)
+    local originDragonName : string = self:_randomDragonName()
+    local targetDragonName : string = string.gsub(originDragonName, " ", "")
 
     -- Finds the correct module that inherits from the specified dragon class
     local targetModule : ModuleScript? = Classes:FindFirstChild(targetDragonName)
@@ -84,8 +82,10 @@ function DragonService:SelectRandomDragon(locationPart : BasePart?, level : numb
 end
 
 -- Spawn the dragons
-function DragonService:SpawnDragons(locationName : string?, level : number?)
-    local spawnFolder : Folder? = self.StartLocations:FindFirstChild(locationName .. "_Dragons")
+function DragonService:SpawnDragons(locationName : string, level : number)
+    local spawnFolder : Folder? = self.StartLocations:FindFirstChild(
+        locationName .. "_Dragons"
+    )
     if not spawnFolder then
         warn("No folder of this location name.")
         return
@@ -162,13 +162,18 @@ end
 
 -- Link the dragon to the UI so when the player gets close, the UI shows up
 function DragonService:_linkDragonUI(dragonObject)
-    for index, player in ipairs(game.Players:GetChildren()) do
+    for _, player in ipairs(game.Players:GetChildren()) do
         if not player then
             continue
         end
 
         -- Call it on the client
-        self.Client.LinkDragonToUI:Fire(player, dragonObject.Humanoid, dragonObject.HumanoidRootPart, dragonObject.Level)
+        self.Client.LinkDragonToUI:Fire(
+            player,
+            dragonObject.Humanoid,
+            dragonObject.HumanoidRootPart,
+            dragonObject.Level
+        )
     end
 end
 

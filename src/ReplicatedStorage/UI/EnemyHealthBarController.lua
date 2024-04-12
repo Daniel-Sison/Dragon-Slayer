@@ -8,7 +8,11 @@ local GeneralUI = require(ReplicatedStorage.Source.Modules.General.GeneralUI)
 Usage:
 
 Public Methods:
-    - EnemyHealthBarController:UpdateFill(targetFrame : frame?, newData : number?, maxData : number?)
+    - EnemyHealthBarController:UpdateFill(
+        targetFrame : Frame,
+        newData : number,
+        maxData : number
+    )
         - Update the fill of the health bar
 
 ]]
@@ -29,7 +33,12 @@ local DragonService
 
 -- Updates the green fill of the healthbar displayed
 -- whenever you get close to a dragon
-function EnemyHealthBarController:UpdateFill(targetFrame : frame?, newData : number?, maxData : number?)
+function EnemyHealthBarController:UpdateFill(
+    targetFrame : Frame,
+    newData : number,
+    maxData : number
+)
+
     local fill = targetFrame.HealthBar.Fill
     local fraction = newData / maxData
 
@@ -62,7 +71,11 @@ end
 
 
 -- Links a dragon to an open spot
-function EnemyHealthBarController:_linkDragonToOpenSlot(humanoid : Humanoid?, root : BasePart?, level : number?)
+function EnemyHealthBarController:_linkDragonToOpenSlot(
+    humanoid : Humanoid,
+    root : BasePart,
+    level : number
+)
 
     -- Search for an open slot
     local slot : Frame? = self:_findOpenSlot()
@@ -151,7 +164,12 @@ function EnemyHealthBarController:KnitStart()
     self.Dragon2 = self.Container:WaitForChild("Dragon2")
 
     -- Lnks a dragon from the dragonservice to an open slot
-    DragonService.LinkDragonToUI:Connect(function(humanoid : Humanoid?, root : BasePart?, level : number?)
+    DragonService.LinkDragonToUI:Connect(function(
+        humanoid : Humanoid,
+        root : BasePart,
+        level : number
+    )
+    
         self:_linkDragonToOpenSlot(humanoid, root, level)
     end)
 end

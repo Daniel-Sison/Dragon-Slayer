@@ -45,7 +45,7 @@ setmetatable(ShadowDragon, Dragon)
 ----------------------------------------------
 
 
-function ShadowDragon.new(spawnPosition : Vector3?, level : number?)
+function ShadowDragon.new(spawnPosition : Vector3, level : number)
 	local shadowDragonObject = Dragon.new("Shadow Dragon", spawnPosition)
 	setmetatable(shadowDragonObject, ShadowDragon)
 	
@@ -92,7 +92,7 @@ function ShadowDragon:GetFireExplosion()
 end
 
 
-function ShadowDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+function ShadowDragon:DealElementalEffect(humanoid : Humanoid)
     local player = game.Players:GetPlayerFromCharacter(humanoid.Parent)
 	if not player then
 		return

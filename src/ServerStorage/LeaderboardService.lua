@@ -34,12 +34,12 @@ local CoinService
 ----------------------------------------------
 
 -- Client is able to read data
-function LeaderboardService.Client:GetData(player : Player?, dataName : string?)
+function LeaderboardService.Client:GetData(player : Player, dataName : string)
     return self.Server:GetData(player, dataName)
 end
 
 
-function LeaderboardService:GetData(player : Player?, dataName : string?)
+function LeaderboardService:GetData(player : Player, dataName : string)
     -- Find the entry of the correct player
     local entry : string? = self.PlayerStats[player.UserId]
     if not entry then
@@ -59,7 +59,7 @@ function LeaderboardService:GetData(player : Player?, dataName : string?)
 end
 
 -- Only a server function for setting data
-function LeaderboardService:SetData(player : Player?, dataName : string?, newData : any?)
+function LeaderboardService:SetData(player : Player, dataName : string, newData : any)
     -- Find the entry of the correct player
     local entry : string? = self.PlayerStats[player.UserId]
     if not entry then
@@ -78,7 +78,7 @@ function LeaderboardService:SetData(player : Player?, dataName : string?, newDat
     self.PlayerStats[player.UserId][dataName] = newData
 end
 
-function LeaderboardService:ResetPlayerStats(player : Player?)
+function LeaderboardService:ResetPlayerStats(player : Player)
     self.PlayerStats[player.UserId] = TableUtil.Copy(self.Template, true)
 
     CoinService:ShowChangesInCoinUI(player)

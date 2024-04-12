@@ -3,7 +3,12 @@ local module = {}
 
 -- Raycast from one point to another
 -- Will return the result
-function module:Cast(originPoint : Vector3?, destinationPoint : Vector3?, ignoreList : table?)
+function module:Cast(
+    originPoint : Vector3,
+    destinationPoint : Vector3,
+    ignoreList : table
+)
+
 	local raycastResult
 
     local raycastParams = RaycastParams.new()
@@ -11,16 +16,15 @@ function module:Cast(originPoint : Vector3?, destinationPoint : Vector3?, ignore
     raycastParams.FilterDescendantsInstances = ignoreList
     raycastParams.IgnoreWater = true
 
-    raycastResult = workspace:Raycast(originPoint, destinationPoint - originPoint, raycastParams)
+    raycastResult = workspace:Raycast(
+        originPoint,
+        destinationPoint - originPoint,
+        raycastParams
+    )
 
     if raycastResult then
-        --	print("Object/terrain hit:", raycastResult.Instance:GetFullName())
-        --	print("Hit position:", raycastResult.Position)
-        --	print("Name of Parent:", raycastResult.Instance.Parent.Name)
-        --	print("Material hit:", raycastResult.Material.Name)
         return raycastResult
     else
-        --	print("Nothing was hit!")
         return nil
     end
 
@@ -29,7 +33,7 @@ function module:Cast(originPoint : Vector3?, destinationPoint : Vector3?, ignore
 end
 
 -- Checks to see if model1 is facing model 2
-function module:IsFacing(model1 : Model?, model2 : Model?) : boolean?
+function module:IsFacing(model1 : Model, model2 : Model): boolean
 	
 	local head1 = model1:FindFirstChild("Head")
 	local head2 = model2:FindFirstChild("Head")

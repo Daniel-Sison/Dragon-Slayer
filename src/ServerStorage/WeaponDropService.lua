@@ -7,7 +7,7 @@ local GeneralTween = require(ReplicatedStorage.Source.Modules.General.GeneralTwe
 Usage:
 
 Public Methods:
-    - WeaponDropService:DropRandomWeapon(targetPosition : Vector3?, level : number?)
+    - WeaponDropService:DropRandomWeapon(targetPosition : Vector3, level : number)
         - Drops a random weapon at the specified target position
         - The weapon is based on the level provided
 ]]
@@ -23,9 +23,11 @@ local ToolService
 -------------- Public Methods ----------------
 ----------------------------------------------
 
-function WeaponDropService:DropRandomWeapon(targetPosition : Vector3?, level : number?)
+function WeaponDropService:DropRandomWeapon(targetPosition : Vector3, level : number)
     -- Search for the appropriate folder
-    local levelFolder : Folder? = ReplicatedStorage.Assets.Weapons:FindFirstChild("Level_" .. level)
+    local levelFolder : Folder? = ReplicatedStorage.Assets.Weapons:FindFirstChild(
+        "Level_" .. level
+    )
     if not levelFolder then
         warn("No levelfolder of given level can be found")
         return
@@ -55,12 +57,12 @@ function WeaponDropService:DropRandomWeapon(targetPosition : Vector3?, level : n
     interactPart.Parent = workspace.EffectStorage
 
     -- Load appropriate particles into the handle
-    local particle : BasePart? = ReplicatedStorage.Assets.Effects.NewWeapon:Clone()
+    local particle : BasePart = ReplicatedStorage.Assets.Effects.NewWeapon:Clone()
     particle.Position = targetPosition
     particle.Parent = workspace.EffectStorage
 
     -- Create a prormpt
-    local prompt : ProximityPrompt? = Instance.new("ProximityPrompt")
+    local prompt : ProximityPrompt = Instance.new("ProximityPrompt")
     prompt.ActionText = "Collect"
     prompt.ObjectText = chosenWeapon.Name
     prompt.HoldDuration = 0.25
@@ -69,7 +71,7 @@ function WeaponDropService:DropRandomWeapon(targetPosition : Vector3?, level : n
 
     -- Debounce to prevent triggering multiple times
     local debounce : boolean? = true
-    prompt.Triggered:Connect(function(player : Player?)
+    prompt.Triggered:Connect(function(player : Player)
         if not debounce then
             return
         end
@@ -86,7 +88,10 @@ function WeaponDropService:DropRandomWeapon(targetPosition : Vector3?, level : n
 
     GeneralTween:SimpleTween(
         interactPart,
-        {Position = interactPart.Position + Vector3.new(0, 5, 0), Transparency = 0},
+        {
+            Position = interactPart.Position + Vector3.new(0, 5, 0),
+            Transparency = 0
+        },
         1
     )
 end

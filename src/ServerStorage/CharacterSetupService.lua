@@ -15,22 +15,26 @@ Public Methods:
         - Opens the closest portal
         - When a player has completed a level, this function is called
     
-    - CharacterSetupService:LoadNextLevel(player : Player?)
+    - CharacterSetupService:LoadNextLevel(player : Player)
         - Calls TeleportPlayer to move them to the appropriate place
         - Calls SpawnDragons from the DragonService
 
-    - CharacterSetupService:LoadToolAndEnemies(player : Player?)
+    - CharacterSetupService:LoadToolAndEnemies(player : Player)
         - Gives player starter weapon
         - Loads enemy dragons
 
-    - CharacterSetupService:TeleportPlayer(player : Player?, targetLocationName : string?, transition : boolean?)
+    - CharacterSetupService:TeleportPlayer(
+        player : Player,
+        targetLocationName : string,
+        transition : boolean
+    )
         - Teleport player to specified location
 
-    - CharacterSetupService:ResetPlayer(player : Player?)
+    - CharacterSetupService:ResetPlayer(player : Player)
         - When player dies, then reset their stats
         - Resets dragons, portals, and the rest of the game
 
-    - CharacterSetupService:PlayerWin(player : Player?)
+    - CharacterSetupService:PlayerWin(player : Player)
         - When player wins, this is called
         - Resets dragons, portals, and the rest ofo the game
 
@@ -55,7 +59,7 @@ local PortalService
 ----------------------------------------------
 
 -- Update specified stats on player's character to reflect changes
-function CharacterSetupService:UpdateStatsOnPlayer(player, dataName)
+function CharacterSetupService:UpdateStatsOnPlayer(player: Player, dataName: string)
     if not player.Character then
         return
     end
@@ -91,7 +95,7 @@ function CharacterSetupService:LevelComplete()
 end
 
 
-function CharacterSetupService:LoadNextLevel(player : Player?)
+function CharacterSetupService:LoadNextLevel(player : Player)
     -- Get current level
     local currentLevel = LeaderboardService:GetData(player, "Level")
 
@@ -103,12 +107,12 @@ function CharacterSetupService:LoadNextLevel(player : Player?)
 end
 
 
-function CharacterSetupService.Client:StartPlayer(player : Player?)
+function CharacterSetupService.Client:StartPlayer(player : Player)
     self.Server:LoadToolAndEnemies(player)
 end
 
 
-function CharacterSetupService:LoadToolAndEnemies(player : Player?)
+function CharacterSetupService:LoadToolAndEnemies(player : Player)
     -- Give player starter weapon
     ToolService:AddToolToPlayer("Wood Stick", player)
 
@@ -119,7 +123,12 @@ function CharacterSetupService:LoadToolAndEnemies(player : Player?)
 end
 
 
-function CharacterSetupService:TeleportPlayer(player : Player?, targetLocationName : string?, transition : boolean?)
+function CharacterSetupService:TeleportPlayer(
+    player : Player,
+    targetLocationName : string,
+    transition : boolean?
+)
+
     if not player.Character then
         return
     end
@@ -149,7 +158,7 @@ function CharacterSetupService:TeleportPlayer(player : Player?, targetLocationNa
 end
 
 -- When the player dies, this is called
-function CharacterSetupService:ResetPlayer(player : Player?)
+function CharacterSetupService:ResetPlayer(player : Player)
     task.delay(2, function()
         -- Show the endgame UI
         self.Client.GameEndedForPlayer:Fire(player, false)
@@ -163,7 +172,7 @@ function CharacterSetupService:ResetPlayer(player : Player?)
 end
 
 -- Called when the player wins
-function CharacterSetupService:PlayerWin(player : Player?)
+function CharacterSetupService:PlayerWin(player : Player)
 
     -- Show the endgame UI
     self.Client.GameEndedForPlayer:Fire(player, true)

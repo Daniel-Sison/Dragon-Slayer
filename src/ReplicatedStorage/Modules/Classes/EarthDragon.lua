@@ -37,7 +37,7 @@ setmetatable(EarthDragon, Dragon)
 ----------------------------------------------
 
 
-function EarthDragon.new(spawnPosition : Vector3?, level : number?)
+function EarthDragon.new(spawnPosition : Vector3, level : number)
 	local earthDragonObject = Dragon.new("Earth Dragon", spawnPosition)
 	setmetatable(earthDragonObject, EarthDragon)
 	
@@ -52,7 +52,7 @@ end
 ----------------------------------------------
 
 
-function EarthDragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
+function EarthDragon:Bite(targetRoot : BasePart, targetHumanoid : Humanoid)
 
 	-- Create the effect every bite
 	ParticleHandler:EarthCircleEffect(self.HumanoidRootPart)
@@ -64,7 +64,11 @@ function EarthDragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
 end
 
 
-function EarthDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+function EarthDragon:DealElementalEffect(
+	humanoid : Humanoid?,
+	root : BasePart?,
+	explosionPosition : Vector3?
+)
     return
 end
 

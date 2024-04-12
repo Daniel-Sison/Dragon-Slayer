@@ -44,7 +44,7 @@ setmetatable(VampireDragon, Dragon)
 ----------------------------------------------
 
 
-function VampireDragon.new(spawnPosition : Vector3?, level : number?)
+function VampireDragon.new(spawnPosition : Vector3, level : number)
 	local vampireDragonObject = Dragon.new("Vampire Dragon", spawnPosition)
 	setmetatable(vampireDragonObject, VampireDragon)
 	
@@ -92,11 +92,15 @@ function VampireDragon:GetFireExplosion()
 end
 
 -- Deal an elemental effect
-function VampireDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+function VampireDragon:DealElementalEffect(humanoid : Humanoid, root : BasePart)
 
     -- Create a beam
     local container = Assets.Effects.LifeDrainBeam
-    local a0 : Attachment?, a1 : Attachment? = ParticleHandler:BeamLink(self.HumanoidRootPart, root, container)
+    local a0 : Attachment, a1 : Attachment = ParticleHandler:BeamLink(
+        self.HumanoidRootPart,
+        root,
+        container
+    )
 
     -- Deal damage to the player, while healing the dragon
     for i = 1, 3 do

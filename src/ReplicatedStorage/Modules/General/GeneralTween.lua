@@ -28,7 +28,14 @@ local player = game.Players.LocalPlayer
 ----------- Public Functions -----------
 
 -- Same thing as GeneralUI but for any item
-function GeneralTween:SimpleTween(item : any?, goal, duration, easingStyle, easingDirection)
+function GeneralTween:SimpleTween(
+	item : any,
+	goal: {},
+	duration: number?,
+	easingStyle: Enum.EasingStyle?,
+	easingDirection: Enum.EasingDirection?
+)
+
 	if not duration then
 		duration = 1
 	end

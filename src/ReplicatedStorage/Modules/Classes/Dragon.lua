@@ -82,7 +82,7 @@ local ATTACK_CYCLE = {
 ---------------- Constructor -----------------
 ----------------------------------------------
 
-function Dragon.new(bodyName : string?, spawnPosition : Vector3?)
+function Dragon.new(bodyName : string, spawnPosition : Vector3)
     local DragonObject = {}
     setmetatable(DragonObject, Dragon)
 
@@ -147,7 +147,11 @@ function Dragon:Roam()
     local randomX = math.random(-20, 20)
     local randomZ = math.random(-20, 20)
 
-    local randomPosition : Vector3 = self.OriginPosition + Vector3.new(randomX, 0, randomZ)
+    local randomPosition : Vector3 = self.OriginPosition + Vector3.new(
+        randomX,
+        0,
+        randomZ
+    )
     self:MoveDragonTo(randomPosition)
 end
 
@@ -209,7 +213,7 @@ end
 
 
 -- Move the dragon to a specified position
-function Dragon:MoveDragonTo(position : Vector3?)
+function Dragon:MoveDragonTo(position : Vector3)
     if self.MoveToFinishedConnection then
         self.MoveToFinishedConnection:Disconnect()
         self.MoveToFinishedConnection = nil
@@ -233,7 +237,7 @@ end
 
 
 -- Bite the player
-function Dragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
+function Dragon:Bite(targetRoot : BasePart, targetHumanoid : Humanoid)
 
     -- Will only bite if the dragon is facing the player
     if not Raycaster:IsFacing(self.Body, targetRoot.Parent) then
@@ -264,14 +268,18 @@ end
 
 
 -- The default doesn't deal any elemental effects, just does damage
-function Dragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+function Dragon:DealElementalEffect(
+    humanoid : Humanoid?,
+    root : BasePart?,
+    explosionPosition : Vector3?
+)
    return
 end
 
 
 -- Default burn method
-function Dragon:Burn(humanoid : Humanoid?, root : BasePart?)
-    local flames : ParticleEmitter? = Assets.Effects.Flames:Clone()
+function Dragon:Burn(humanoid : Humanoid, root : BasePart)
+    local flames : ParticleEmitter = Assets.Effects.Flames:Clone()
     flames.Parent = root
 
     -- Burn the player 4 times for 1 damage
@@ -291,8 +299,8 @@ end
 
 -- Recolor the specified particles in a container
 -- the colorSequence gets passed onto each particle
-function Dragon:RecolorParticles(container : any?, colorSequence : ColorSequence?)
-    for index, particle in ipairs(container:GetDescendants()) do
+function Dragon:RecolorParticles(container : any, colorSequence : ColorSequence)
+    for _, particle in ipairs(container:GetDescendants()) do
         if not particle:IsA("ParticleEmitter") then
             continue
         end
@@ -459,19 +467,23 @@ function Dragon:_runFireBreath()
     local targetPosition = targetRoot.Position
 
     -- The fireball part being launched
-    local fireball : BasePart? = self:GetFireProjectile()
+    local fireball : BasePart = self:GetFireProjectile()
 
     -- Spawn the sound inside the fireball as it moves
-    local fireSound : Sound? = ReplicatedStorage.Assets.Sounds.FireballSound:Clone()
+    local fireSound : Sound = ReplicatedStorage.Assets.Sounds.FireballSound:Clone()
     fireSound.Parent = fireball
     fireSound:Play()
 
     -- Create a CFrame between the two CFrames for generating Bezier curves
-    local middleCFrame : CFrame? = self.Mouth.CFrame:Lerp(self.Mouth.CFrame, 0.5)
-    middleCFrame = middleCFrame + Vector3.new(math.random(-10, 10), math.random(5, 10), math.random(-10, 10))
+    local middleCFrame : CFrame = self.Mouth.CFrame:Lerp(self.Mouth.CFrame, 0.5)
+    middleCFrame = middleCFrame + Vector3.new(
+        math.random(-10, 10),
+        math.random(5, 10),
+        math.random(-10, 10)
+    )
 
-    local numberValue : NumberValue? = Instance.new("NumberValue")
-    local debounce : boolean? = true
+    local numberValue : NumberValue = Instance.new("NumberValue")
+    local debounce : boolean = true
 
     local connection
     connection = numberValue.Changed:Connect(function()
@@ -519,7 +531,7 @@ end
 
 
 -- When the fireball explodes after reaching the target location
-function Dragon:_fireballPopDamage(explosionPosition : Vector3?)
+function Dragon:_fireballPopDamage(explosionPosition : Vector3)
     -- Describes the hit radius of the explosion
     local radius : number? = 12
 
@@ -593,7 +605,7 @@ function Dragon:_stopAnimations()
     self.PlayingAnimation = nil
 end
 
-function Dragon:_playAnimation(animationName : string?, override : boolean?)
+function Dragon:_playAnimation(animationName : string, override : boolean)
 
     -- If this parameter is not left empty, then will stop old animation
     if override then

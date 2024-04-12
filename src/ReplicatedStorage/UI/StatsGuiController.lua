@@ -7,7 +7,7 @@ local GeneralUI = require(ReplicatedStorage.Source.Modules.General.GeneralUI)
 Usage:
 
 Public Methods:
-    - StatsGuiController:UpdateCoins(newCoinAmount : number?)
+    - StatsGuiController:UpdateCoins(newCoinAmount : number)
         - Update the coins
 
     - StatsGuiController:ShowAllUI()
@@ -29,7 +29,7 @@ local CoinService
 
 
 -- Update the coins
-function StatsGuiController:UpdateCoins(newCoinAmount : number?)
+function StatsGuiController:UpdateCoins(newCoinAmount : number)
     self.CoinTextHolder.Text = tostring(newCoinAmount)
 end
 

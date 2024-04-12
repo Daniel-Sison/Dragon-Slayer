@@ -12,7 +12,7 @@ Public Methods:
         - Use this on each tool that the player gets to make it active
         - Currently will only set up on swords
 
-    - ToolService:UseToolAction(tool, tool)
+    - ToolService:UseToolAction(tool, player)
         - Will cause the tool to activate
         - This is automatically connected to the tool once 
           ToolService:ConfigureTool has been applied to it.
@@ -62,7 +62,7 @@ local SWORD_ANIMATION_CYCLE = {
 ----------------------------------------------
 
 -- Adds a specified tool to a player's backpack
-function ToolService:AddToolToPlayer(toolName : string?, player : Player?)
+function ToolService:AddToolToPlayer(toolName : string, player : Player)
     
     -- If the specified target tool is not there, then return a warning.
     local targetWeapon = ReplicatedStorage.Assets.Weapons:FindFirstChild(toolName, true)
@@ -80,7 +80,7 @@ end
 
 
 -- Setup each of the tool's connections and such
-function ToolService:ConfigureTool(tool : Tool?, player : Player?)
+function ToolService:ConfigureTool(tool : Tool, player : Player)
     local toolConnections = {}
 
     local activationConnection
@@ -132,7 +132,7 @@ end
 
 
 -- This function is activated when the tool is activated on click/tap
-function ToolService:UseToolAction(player : Player?, tool : Tool?)
+function ToolService:UseToolAction(player : Player, tool : Tool)
     local character = tool.Parent
 
     -- Return if the character doesn't exist
@@ -177,7 +177,11 @@ function ToolService:UseToolAction(player : Player?, tool : Tool?)
     self:_playAttackSound(tool)
 
     -- Play the animation, return all targets hit during animation
-    local targetList : table? = self:_attackAnimation(animator, character, tool)
+    local targetList : {} = self:_attackAnimation(
+        animator,
+        character,
+        tool
+    )
     self:_dealDamageToTargetList(targetList, tool, playerStrength)
 
     -- When the animation ends, do the following
@@ -194,7 +198,7 @@ end
 ----------------------------------------------
 
 -- Play a specified sound
-function ToolService:_playAttackSound(tool : Tool?)
+function ToolService:_playAttackSound(tool : Tool)
     if tool:GetAttribute("NextAttack") == "SlashAnim" then
         tool.Handle.SwordSlash:Play()
     elseif tool:GetAttribute("NextAttack") == "StabAnim" then
@@ -205,8 +209,13 @@ function ToolService:_playAttackSound(tool : Tool?)
 end
 
 -- Given a target list, deal damage to each one
-function ToolService:_dealDamageToTargetList(targetList : table?, tool : Tool?, playerStrength : number?)
-    for index, model in ipairs(targetList) do
+function ToolService:_dealDamageToTargetList(
+    targetList : table,
+    tool : Tool,
+    playerStrength : number
+)
+
+    for _, model in ipairs(targetList) do
         -- If the model doesn't have a humanoid, filter it
         local humanoid : Humanoid = model:FindFirstChildOfClass("Humanoid")
         if not humanoid then
@@ -225,7 +234,7 @@ end
 
 
  -- This will cycle the attack animations
-function ToolService:_cycleAnimation(tool : Tool?)
+function ToolService:_cycleAnimation(tool : Tool)
     local nextAttack = tool:GetAttribute("NextAttack")
 
     if nextAttack then
@@ -238,10 +247,16 @@ function ToolService:_cycleAnimation(tool : Tool?)
 end
 
 
-function ToolService:_attackAnimation(animator : Animator?, character : Model?, tool : Tool?)
+function ToolService:_attackAnimation(
+    animator : Animator,
+    character : Model,
+    tool : Tool
+)
 
     -- Find the animation of the next attack
-    local chosenAnim = tool.Animations:FindFirstChild(tool:GetAttribute("NextAttack"))
+    local chosenAnim = tool.Animations:FindFirstChild(
+        tool:GetAttribute("NextAttack")
+    )
     if not chosenAnim then
         warn("The chosen animation cannot be found in the animations folder of the tool.")
         return
@@ -272,7 +287,11 @@ function ToolService:_attackAnimation(animator : Animator?, character : Model?, 
 
             -- Use a RAYCAST system instead of TOUCH for more accurate hitboxes
 
-            local raycastResult = Raycaster:Cast(oldPosition, newPosition, {character})
+            local raycastResult = Raycaster:Cast(
+                oldPosition,
+                newPosition,
+                {character}
+            )
             -- Cast between the old position and the new position of the given attachment
             -- Any results will be put into a table
 
@@ -310,7 +329,7 @@ end
 
 
 -- Clear specified connection table given
-function ToolService:_clearConnectionsTable(givenTable : table?)
+function ToolService:_clearConnectionsTable(givenTable : {})
     for _, connection in ipairs(givenTable) do
         if not connection then
             return
@@ -323,9 +342,9 @@ end
 
 
 
-function ToolService:_configureBackpack(player : Player?)
+function ToolService:_configureBackpack(player : Player)
     -- Configure tools in backpack
-    for index, tool in ipairs(player.Backpack:GetChildren()) do
+    for _, tool in ipairs(player.Backpack:GetChildren()) do
         if not tool:IsA("Tool") then
             continue
         end

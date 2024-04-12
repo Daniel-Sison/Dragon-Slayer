@@ -38,7 +38,7 @@ setmetatable(LavaDragon, Dragon)
 ----------------------------------------------
 
 
-function LavaDragon.new(spawnPosition : Vector3?, level : number?)
+function LavaDragon.new(spawnPosition : Vector3, level : number)
 	local lavaDragonObject = Dragon.new("Lava Dragon", spawnPosition)
 	setmetatable(lavaDragonObject, LavaDragon)
 	
@@ -58,10 +58,10 @@ end
 
 
 -- Replaces the Dragon parent class bite
-function LavaDragon:Bite(targetRoot : BasePart?, targetHumanoid : Humanoid?)
+function LavaDragon:Bite(targetRoot : BasePart, targetHumanoid : Humanoid)
 
 	-- Copy the LavaCircle part
-	local lavaCircle : Part? = Assets.Effects.LavaCircle:Clone()
+	local lavaCircle : Part = Assets.Effects.LavaCircle:Clone()
 	lavaCircle.Position = self.HumanoidRootPart.Position - Vector3.new(0, 2.85, 0)
 	lavaCircle.Parent = workspace.EffectStorage
 
@@ -102,7 +102,11 @@ end
 
 
 
-function LavaDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+function LavaDragon:DealElementalEffect(
+	humanoid : Humanoid?,
+	root : BasePart?,
+	explosionPosition : Vector3?
+)
     return
 end
 
@@ -125,7 +129,7 @@ end
 
 -- Cleans the lava
 function LavaDragon:_cleanLava()
-	for index, oldLava in ipairs(self.LavaContainer) do
+	for _, oldLava in ipairs(self.LavaContainer) do
 		if not oldLava then
 			continue
 		end

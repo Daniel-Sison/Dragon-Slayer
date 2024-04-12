@@ -44,7 +44,7 @@ setmetatable(PoisonDragon, Dragon)
 ----------------------------------------------
 
 
-function PoisonDragon.new(spawnPosition : Vector3?, level : number?)
+function PoisonDragon.new(spawnPosition : Vector3, level : number)
 	local poisonDragonObject = Dragon.new("Poison Dragon", spawnPosition)
 	setmetatable(poisonDragonObject, PoisonDragon)
 	
@@ -92,7 +92,7 @@ function PoisonDragon:GetFireExplosion()
 end
 
 
-function PoisonDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+function PoisonDragon:DealElementalEffect(humanoid : Humanoid, root : BasePart)
     -- The poison particle
     local poison = Assets.Effects.Poison:Clone()
     poison.Parent = root

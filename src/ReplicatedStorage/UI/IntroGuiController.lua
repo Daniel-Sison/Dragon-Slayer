@@ -105,7 +105,10 @@ function IntroGuiController:_runProgram()
     )
 
     -- Simple camera effect
-    self.IntroCamTween = CameraController:CameraToPart(self.CameraPositions.StartCam2, 30)
+    self.IntroCamTween = CameraController:CameraToPart(
+        self.CameraPositions.StartCam2,
+        30
+    )
 end
 
 -- When the play button has been clicked
@@ -186,7 +189,7 @@ function IntroGuiController:KnitStart()
     self.GameTitle = self.Container:WaitForChild("Title")
     self.LoadingItems = self.Container:WaitForChild("LoadingItems")
 
-    for index, item in ipairs(self.LoadingItems:GetChildren()) do
+    for _, item in ipairs(self.LoadingItems:GetChildren()) do
        -- Sets the second argument as the element's attribute as "HiddenPosition"
         GeneralUI:Configure(item, item.Position + UDim2.new(0, 0, 1, 0))
     end

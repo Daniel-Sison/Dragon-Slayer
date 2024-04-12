@@ -7,15 +7,15 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 Usage:
 
 Public Methods:
-    - ShopService:FinishedBuying(player : Player?)
+    - ShopService:FinishedBuying(player : Player)
         - When a player is finished buying from the shop
         - This function calls the "Load into next stage" function from CharacterSetupService
 
-    - ShopService:OpenShop(player : Player?)
+    - ShopService:OpenShop(player : Player)
         - Generates random shop items
         - Opens the shop for the player
 
-    - ShopService:BuyItem(player : Player?, itemName : string?)
+    - ShopService:BuyItem(player : Player, itemName : string)
         - When the player requests to buy an item from the client
         - Will check if player has enough money to buy on the server and the client
         - Buying will only occur on the server
@@ -60,16 +60,16 @@ local SHOP_ITEMS = {
 -------------- Public Methods ----------------
 ----------------------------------------------
 
-function ShopService.Client:FinishedBuying(player : Player?)    
+function ShopService.Client:FinishedBuying(player : Player)    
     self.Server:FinishedBuying(player)
 end
 
 
-function ShopService.Client:BuyItem(player : Player?, itemName : string?)    
+function ShopService.Client:BuyItem(player : Player, itemName : string)    
     self.Server:BuyItem(player, itemName)
 end
 
-function ShopService:FinishedBuying(player : Player?)
+function ShopService:FinishedBuying(player : Player)
     -- ShopOpen prevents client from calling FinishedBuying if the shop hasn't been
     -- opened by the server
     if not self.ShopOpen then
@@ -82,7 +82,7 @@ function ShopService:FinishedBuying(player : Player?)
     CharacterSetupService:LoadNextLevel(player)
 end
 
-function ShopService:OpenShop(player : Player?)
+function ShopService:OpenShop(player : Player)
     -- Generate a table of random items that can be purchased by the player
     local shopItems : table? = self:_generateAllShopItems()
 
@@ -94,7 +94,7 @@ function ShopService:OpenShop(player : Player?)
     self.Client.OpenShopUISignal:Fire(player, shopItems)
 end
 
-function ShopService:BuyItem(player : Player?, itemName : string?)
+function ShopService:BuyItem(player : Player, itemName : string)
     -- If the requested item doesn't exist, just return
     if not self.CurrentShopItems[itemName] then
         return
@@ -121,7 +121,11 @@ function ShopService:BuyItem(player : Player?, itemName : string?)
     local dataName : string? = self.CurrentShopItems[itemName].OriginName
 
     -- Decrease the player's coins by the cost
-    LeaderboardService:SetData(player, "Coins", coinAmount - self.CurrentShopItems[itemName].Cost)
+    LeaderboardService:SetData(
+        player,
+        "Coins",
+        coinAmount - self.CurrentShopItems[itemName].Cost
+    )
     CoinService:ShowChangesInCoinUI(player)
 
     if dataName == "Heal" then
@@ -175,7 +179,10 @@ function ShopService:_getRandomShopItem() : table?
     local shopItemName : string? = shopNamesTable[math.random(1, #shopNamesTable)]
 
     return {
-        Title = "+" .. tostring(randomNumber * SHOP_ITEMS[shopItemName].BaseAmount) .. " "  .. shopItemName,
+        Title = "+" ..
+            tostring(randomNumber * SHOP_ITEMS[shopItemName].BaseAmount) ..
+            " "  ..
+            shopItemName,
         Description = SHOP_ITEMS[shopItemName].Description,
         Cost = SHOP_ITEMS[shopItemName].BaseCost * randomNumber,
         Amount = SHOP_ITEMS[shopItemName].BaseAmount * randomNumber,

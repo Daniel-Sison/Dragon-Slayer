@@ -93,10 +93,21 @@ function ElectricDragon:GetFireExplosion()
 end
 
 
-function ElectricDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+function ElectricDragon:DealElementalEffect(
+    humanoid : Humanoid?,
+    root : BasePart?
+)
+
+    if not humanoid then
+        return
+    end
+
+    if not root then
+        return
+    end
 
     -- Clone electricity effect
-    local electricAttachment : Attachment? = Assets.Effects.Electricity.Attachment:Clone()
+    local electricAttachment : Attachment = Assets.Effects.Electricity.Attachment:Clone()
     electricAttachment.Parent = root
 
     -- Make the humanoid unable to walk
@@ -109,7 +120,7 @@ function ElectricDragon:DealElementalEffect(humanoid : Humanoid?, root : BasePar
     -- Pulse the electric particle 5 times within the duration
     for i = 1, pulseAmount do
         task.delay((duration / pulseAmount) * i, function()
-            for index, particle in ipairs(electricAttachment:GetChildren()) do
+            for _, particle in ipairs(electricAttachment:GetChildren()) do
                 particle:Emit(particle.Rate)
             end
         end)

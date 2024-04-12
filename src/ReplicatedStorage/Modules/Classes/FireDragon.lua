@@ -41,7 +41,7 @@ setmetatable(FireDragon, Dragon)
 ----------------------------------------------
 
 
-function FireDragon.new(spawnPosition : Vector3?, level : number?)
+function FireDragon.new(spawnPosition : Vector3, level : number)
 	local fireDragonObject = Dragon.new("Fire Dragon", spawnPosition)
 	setmetatable(fireDragonObject, FireDragon)
 	
@@ -56,7 +56,7 @@ end
 ----------------------------------------------
 
 
-function Dragon:DealElementalEffect(humanoid : Humanoid?, root : BasePart?, explosionPosition : Vector3?)
+function Dragon:DealElementalEffect(humanoid : Humanoid, root : BasePart)
 	-- Use the default burn method on the humanoid that was hit
     self:Burn(humanoid, root)
 end

@@ -82,7 +82,12 @@ end
 
 -- Will tween the camera to part
 -- If part is not provided, then will return a warning
-function CameraController:CameraToPart(part, duration, easingStyle, easingDirection)
+function CameraController:CameraToPart(
+	part: BasePart,
+	duration: number,
+	easingStyle: Enum.EasingStyle,
+	easingDirection: Enum.EasingDirection
+)
 	
 	local goal = {}
 	
